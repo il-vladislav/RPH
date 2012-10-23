@@ -1,5 +1,5 @@
-def read_classification_from_file(path):
-	path = add_slash(path) + "!truth.txt"
+def read_classification_from_file(path, name):
+	path = add_slash(path) + name
 	myfile = open(path, "r")
 	mydict = {}
         for line in myfile.xreadlines():
