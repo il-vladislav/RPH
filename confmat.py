@@ -12,18 +12,19 @@ class BinaryConfusionMatrix:
                 return(self.tf_matrix)
 
         def update(self, truth, pred):
-                if (self.pos_tag !=truth):
-                        if (truth == pred):
+                if (truth == self.pos_tag):
+                        if(pred == self.pos_tag):
                                 self.tf_matrix['tp'] += 1
-                        if (truth != pred):
-                                self.tf_matrix['fp'] += 1
-                if (self.pos_tag == truth):
-                        if (truth != pred):
+                        else:
+                                self.tf_matrix['fn'] += 1
+                else:
+                        if(pred != self.pos_tag):
                                 self.tf_matrix['tn'] += 1
-                        if (truth == pred):
-                                self.tf_matrix['fn'] += 1 
-
-        def compute_from_dicts(truth_dict, pred_dict):
-                return 1
+                        else:
+                                self.tf_matrix['fp'] += 1
+                      
+        def compute_from_dicts(self, truth_dict, pred_dict):
+                for i in truth_dict.keys():
+                        self.update(truth_dict[i],pred_dict[i])
 
         
