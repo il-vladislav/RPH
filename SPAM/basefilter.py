@@ -4,7 +4,7 @@ class BaseFilter:
         self.pred_dict = pred_dict if pred_dict else []
         
     def generate_prediction_file(self):
-        path_to_prediction_file = self.add_slash(self.path_to_dir)+'!predictions.txt'
+        path_to_prediction_file = self.add_slash(self.path_to_dir)+'!prediction.txt'
         prediction_file = open(path_to_prediction_file, 'w+')
         for i in self.pred_dict.keys():
             prediction_file.write(i + " " + self.pred_dict[i] + "\n")
