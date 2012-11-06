@@ -35,10 +35,7 @@ class MyFilter:
         def FROM_emails_to_dict(self,path):
                 #hamers and spamers are dict with type 'str':'str'
                 #fname : FROM_email
-                #'1145.34a6c095d84e586da2b0177b7914882f' : 'robinderbains@shaw.ca'
-                spamers = {}
-                hamers = {}
-                
+                #'1145.34a6c095d84e586da2b0177b7914882f' : 'robinderbains@shaw.ca' 
                 prediction = utils.read_classification_from_file(path, "!truth.txt")
                 corpus = Corpus(path)
                 
@@ -47,14 +44,12 @@ class MyFilter:
                         msg = email.message_from_file(email_file)
                         i = self.extract_email_adress_from_text(msg['From'])
                         if (prediction[fname] == 'SPAM'):
-                                spamers[i] = fname
+                                self.spamers[i] = fname
                         elif (prediction[fname] == 'OK'):
-                                hamers[i] = fname
-                self.spamers = spamers
-                self.hamers = hamers
+                                self.hamers[i] = fname
                 
-                self.generate_file_from_dict(path,'!spammers.txt', spamers)
-                self.generate_file_from_dict(path,'!hamers.txt',hamers)
+                self.generate_file_from_dict(path,'!spammers.txt', self.spamers)
+                self.generate_file_from_dict(path,'!hamers.txt',self.hamers)
 
         
 

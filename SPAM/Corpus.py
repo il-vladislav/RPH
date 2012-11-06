@@ -8,8 +8,11 @@ class Corpus:
         def emails_as_string(self):
                 for file_name in os.listdir(self.path_to_dir):
                         if not file_name.startswith("!"):
-                                with io.open(self.add_slash(self.path_to_dir)+file_name,'r', encoding ='utf-8') as body:
-                                        yield[file_name,body.read()]                        
+                                try:
+                                        with io.open(self.add_slash(self.path_to_dir)+file_name,'r', encoding ='utf-8', errors='ignore') as body:
+                                                yield[file_name,body.read()]
+                                except UnicodeEncodeError:
+                                        pass
                                         
         def add_slash(self, path):
                 if path.endswith("/"): return path
