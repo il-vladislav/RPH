@@ -3,6 +3,7 @@ import email
 import Corpus
 import re
 import pickle
+import collections
 from Corpus import Corpus
 import basefilter
 from basefilter import BaseFilter
@@ -55,14 +56,20 @@ class MyFilter:
                 self.generate_file_from_dict(path,'!spammers.txt', spamers)
                 self.generate_file_from_dict(path,'!hamers.txt',hamers)
 
+        
+
+
         def extract_email_adress_from_text(self, text):
                 #input "Monty Solomon <monty@roscom.com>"
                 #output "monty@roscom.com"
-                mailsrch = re.compile(r'[\w\-][\w\-\.]+@[\w\-][\w\-\.]+[a-zA-Z]{1,4}')
-                list_of_emails = mailsrch.findall(text)
-                if not list_of_emails:
+                try:
+                        mailsrch = re.compile(r'[\w\-][\w\-\.]+@[\w\-][\w\-\.]+[a-zA-Z]{1,4}')
+                        list_of_emails = mailsrch.findall(text)
+                        if not list_of_emails:
+                                return "None"
+                        return list_of_emails[0]
+                except TypeError:
                         return "None"
-                return list_of_emails[0]
 
         def generate_file_from_dict(self,path, fname, my_dict):
                 #input path, output filename and dict
@@ -84,6 +91,32 @@ class MyFilter:
                 if path.endswith("/"): return path
                 return path + "/"
 
+
+"""
+def count_long_words_s(self,path):
+                word_list_s = []
+                word_list_h = []
+                worda
+                prediction = utils.read_classification_from_file(path, "!truth.txt")
+                corpus = Corpus(path)
+                for fname, body in corpus.emails_as_string():
+                        email_file = open(corpus.add_slash(path)+fname,'r')
+                        msg = email.message_from_file(email_file)
+                        email_file.close()
+                        try:
+                                for words in msg.get_payload().split():
+                                        if len(words) > 15:
+                                                if (prediction[fname] == 'SPAM'):
+                                                        word_list_s.append(words)
+                                                if (prediction[fname] == 'OK'):
+                                                        word_list_h.append(words)
+                                                
+                        except AttributeError:
+                                pass
+                for i in word_list_s:
+                        if 
+                return worda
+"""
                 
                         
                         

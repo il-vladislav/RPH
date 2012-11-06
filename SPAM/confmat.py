@@ -26,5 +26,5 @@ class BinaryConfusionMatrix:
         def compute_from_dicts(self, truth_dict, pred_dict):
                 for i in truth_dict.keys():
                         self.update(truth_dict[i],pred_dict[i])
-
+                
         
