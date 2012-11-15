@@ -38,7 +38,13 @@ class MyFilter:
                         msg = email.message_from_file(email_as_file)
                         self.extract_senders_list(msg,fname)
                         self.check_subject(msg,fname)
+                        
+                self.generate_file_from_dict('!spamers.pickle', self.senders_spam)
+                self.generate_file_from_dict('!hamers.pickle',self.senders_ham)
+                self.generate_file_from_dict('!subject_spam.pickle', self.subjects_spam) #TO DO : name of file!!!
+                self.generate_file_from_dict('!subject_ham.pickle',self.subjects_ham)
 
+                
                
         def test(self, path_to_test_dir):                
                 #######TESTING VARS##
@@ -192,7 +198,7 @@ class MyFilter:
                 #######################################################################
                 #Check for common spammer patters from body
                 #######################################################################
-                for word in tokenizer.shortphrase(msg.get_payload()):
+                for word in tokenizer.shortphrase(get_text(msg)):
                         #Counter of alphabetic words with no vowels and at least 7 characters 
                         if len(word)<7:
                                 if self.word_without_vowels(word):
@@ -299,8 +305,7 @@ class MyFilter:
                         self.senders_spam[i] = fname 
                 elif (self.truth[fname] == 'OK'):
                         self.senders_ham[i] = fname
-                self.generate_file_from_dict('!spamers.pickle', self.senders_spam)
-                self.generate_file_from_dict('!hamers.pickle',self.senders_ham)               
+                               
 
         def extract_email_adress_from_text(self, text):
                 """
@@ -335,11 +340,11 @@ class MyFilter:
 
         def read_dict_from_file(self,fname):
                 """
-                Inputs: path to dir, name of file with dictionary
+                Inputs:  name of file with dictionary
                 Outputs: dictionary from file
                 Effects: read existing dictionary from file [run test() before train()]
                 """                
-                pkl_file = open(fname, 'wb+')
+                pkl_file = open(fname, 'rb')
                 my_dict = pickle.load(pkl_file)
                 pkl_file.close()
                 return my_dict
@@ -355,8 +360,6 @@ class MyFilter:
                         self.subjects_spam[i] = fname
                 elif (self.truth[fname] == 'OK'):
                         self.subjects_ham[i] = fname
-                self.generate_file_from_dict('!subject_spam.pickle', self.subjects_spam) #TO DO : name of file!!!
-                self.generate_file_from_dict('!subject_ham.pickle',self.subjects_ham)
                 
 
         def add_slash(self, path):
