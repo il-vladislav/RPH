@@ -25,11 +25,20 @@ class MyFilter:
                 self.senders_ham = {}
                 self.subjects_spam = {}
                 self.subjects_ham = {}
+
+                self.truth = None
                 
                 
         def train(self,path_to_truth_dir):
-                self.extract_senders_list(path_to_truth_dir)
-                self.check_subject(path_to_truth_dir)
+                corpus = Corpus(path_to_truth_dir)
+                truth = utils.read_classification_from_file(self.add_slash(path_to_truth_dir)+"!truth.txt")
+                self.truth = truth
+                for fname, body in corpus.emails_as_string():              
+                        email_as_file = open(corpus.add_slash(path_to_truth_dir) + fname,'r',encoding = 'utf-8')
+                        msg = email.message_from_file(email_as_file)
+                        self.extract_senders_list(msg,fname)
+                        self.check_subject(msg,fname)
+
                
         def test(self, path_to_test_dir):                
                 #######TESTING VARS##
@@ -51,7 +60,6 @@ class MyFilter:
                 prediction = "SPAM";
                 corpus = Corpus(path_to_test_dir)
                 truth = utils.read_classification_from_file(self.add_slash(path_to_test_dir)+"!truth.txt")
-                print('subject_contains_repeated_letters, count_words_without_vowels,count_words_with_two_JKQXZ,count_words_with_15_symbol,count_words_only_uppercase,content_type_text_html,message_priority,words_without_vowels_body_counter,from_equals_to')
                 for fname, body in corpus.emails_as_string():              
                         email_as_file = open(corpus.add_slash(path_to_test_dir) + fname,'r',encoding = 'utf-8')
                         msg = email.message_from_file(email_as_file)
@@ -76,9 +84,17 @@ class MyFilter:
                         
                         try:
                                  a = soup.font['color']
-                                 print(a,truth[fname])
                         except (TypeError,KeyError):
-                                pass
+                                a = 'none'
+
+                        try:
+                                 b = soup.body['color']
+                        except (TypeError,KeyError):
+                                b= 'none'
+                        if (b != 'none' or a != 'none'):
+                                print(a,b, truth[fname])
+
+                        
                 hd = collections.OrderedDict(sorted(hd.items()))
                 sd = collections.OrderedDict(sorted(sd.items()))
 
@@ -198,13 +214,19 @@ class MyFilter:
                 #######################################################################
                 Number_of_HTML_opening_comment_tags = self.find_in_string('<!--',' '.join(tokenizer.shortphrase((self.get_text(msg)))))
                 Number_of_hyperlinks = self.find_in_string('href=',' '.join(tokenizer.shortphrase((self.get_text(msg)))))
-                white_text = self.find_in_string('font color = "#ffffff"',' '.join(tokenizer.shortphrase(self.get_text(msg))))
-                white_text1 = self.find_in_string('color=3d"#ffffff"',' '.join(tokenizer.shortphrase(self.get_text(msg))))
-                #print(' '.join(tokenizer.shortphrase(self.get_text(msg))))
-                #print("\n" * 3)     
-                
+                White_text = ['3D#ff0000', 'red', '3D"#000000"', '3D"#FF0000"', '3D"blue"', '#333333', '3D"#ffffff"', '#ffff80', '3D"#0000FF"', '#000000', '3D#000000', '3D"white"', '#800000', '3D#000000', '3D#0000ff', '3D"blue"', 'red', '#ff0000', '3D"#0000FF"', '3D"blue"', '3D"blue"', '#FF0033', '3D#000000', '#0000FF', '202498', '3D"#FFFFFF"', '#999999', '3D"#000066"', '000000', '#ff6600', '3D#000000', '#ff0000', '3D"#000066"', '3D#ffffff', '3D"#33333=', '3D#FF0000', '#999999', '3D"#00FF00"', 'black', '#fd0000', '#ff6600', 'black', '3D"#000066"', '#333366', '#FFFF00', '3D=22=23FF0000=22', '#FFFFFF', '3D"#008000"', '#2e4361', '3D"#000000"', 'black', 'black', 'black', '#666666', '3D"#FFFFFF"', '#666666', '#333333', '3D#000000', 'blue', '#333333', '#000000', '3D"#FFFF00"', '3D"#CC3333"', '3D"#FFFFFF"', '#000000', '3D"#FFFFFF"', '#999999', '#ff0000', '#ff0000', '#ff0000', '3D"#000066"', '3D"#FFFFFF"', '#FF0000', '3D"#000066"', '3D#ff0000', '3D"ED1C24"', '3D"ED1C24"', '3D#000000', '#666666', '3D"#FFFFFF"', '#000000', 'Firebrick', '#FFFFFF', '#3333FF', '#33CC99', '3D=22=23990000=22', '3D=23ffffff', '#000080', '#ff0000', '#000000', '3D"#66FF00"', '#000000', '#000080', '3D"#99ffff"', '#000000', 'gray', '3D=23ffffff', '#FFFFFF', 'gray', '#ffffff', '3Dred', '3D"#FF0000"', '#000000', '#000000', '3D=22=23=', '3D"#000080"', '#0000FF', '#000080', '3D=23ffffff', '#294D7F', '3D=23ffffff', '#000080', '#FFFFFF', '#FF0000', '3D#000000', '3D"#000066"', '#ff8080', '3D"#000080"', '3D"#0033=', '#ffffff', 'Firebrick', '#FF0000', '3D"487EB3"', '3D#000000', '3D#000000', '3D"#ffffff"', '#ff0000', 'Silver', '#FF0000', '3D"#333333"', '#660000']
+                soup = BeautifulSoup(self.get_text(msg))
+                a = 'none'
+                for i in White_text:
+                        try:
+                                a = soup.font['color']
+                        except (KeyError,TypeError):
+                                pass
+                        
+                        if a == i:
+                                print ('MATCH')
+                white_text = 1
                 return(subject_contains_repeated_letters, count_words_without_vowels,count_words_with_two_JKQXZ,count_words_with_15_symbol,count_words_only_uppercase,content_type_text_html,message_priority,words_without_vowels_body_counter,from_equals_to,white_text)
-
 
 
         def get_text(self,msg):
@@ -266,25 +288,19 @@ class MyFilter:
                         return True
                 return False
 
-        def extract_senders_list(self, path):
+        def extract_senders_list(self, msg, fname):
                 """
                 Inputs: path to dir
                 Outputs: none
                 Effects: Extract email-adresses from email 'From', check if email is SPAM or HAM, generate two dictionaries {email : filename}
                 """
-                truth = utils.read_classification_from_file(self.add_slash(path)+"!truth.txt")
-                corpus = Corpus(path)
-                for fname, body in corpus.emails_as_string():
-                        email_as_file = open(corpus.add_slash(path) + fname,'r', encoding='utf-8')
-                        msg = email.message_from_file(email_as_file)
-                        i = self.extract_email_adress_from_text(msg['From']) #we use this var as index, so name is 'i'
-                        if (truth[fname] == 'SPAM'):
-                                self.senders_spam[i] = fname
-                        elif (truth[fname] == 'OK'):
-                                self.senders_ham[i] = fname
-                self.generate_file_from_dict(path,'!spamers.txt', self.senders_spam)
-                self.generate_file_from_dict(path,'!hamers.txt',self.senders_ham)
-                
+                i = self.extract_email_adress_from_text(msg['From']) #we use this var as index, so name is 'i'
+                if (self.truth[fname] == 'SPAM'):
+                        self.senders_spam[i] = fname 
+                elif (self.truth[fname] == 'OK'):
+                        self.senders_ham[i] = fname
+                self.generate_file_from_dict('!spamers.pickle', self.senders_spam)
+                self.generate_file_from_dict('!hamers.pickle',self.senders_ham)               
 
         def extract_email_adress_from_text(self, text):
                 """
@@ -300,52 +316,47 @@ class MyFilter:
                 except TypeError:
                         return "None"
 
-        def generate_file_from_dict(self, path, fname, my_new_dict):
+        def generate_file_from_dict(self, fname, my_new_dict):
                 """                 
                 Inputs: path to dir, file name ('!hamers.txt' for example) and new dictionary
                 Outputs: none
                 Effects: Generate new file with dictionary. Check if file exist and then fusion two dictionaries (existing and new).
                 """
-                mfile = self.add_slash(path)+fname
+                mfile = fname
                 if os.path.exists(mfile):
-                        mfile = open(self.add_slash(path)+fname,'rb')
+                        mfile = open(fname,'rb')
                         my_existing_dict = pickle.load(mfile)
                         my_new_dict = my_new_dict.copy()
                         my_new_dict.update(my_existing_dict)                        
                         mfile.close()                
-                mfile = open(self.add_slash(path)+fname, 'wb+')
+                mfile = open(fname, 'wb+')
                 pickle.dump(my_new_dict, mfile)
                 mfile.close()
 
-        def read_dict_from_file(self, path, fname):
+        def read_dict_from_file(self,fname):
                 """
                 Inputs: path to dir, name of file with dictionary
                 Outputs: dictionary from file
                 Effects: read existing dictionary from file [run test() before train()]
                 """                
-                pkl_file = open(self.add_slash(path)+fname, 'wb+')
+                pkl_file = open(fname, 'wb+')
                 my_dict = pickle.load(pkl_file)
                 pkl_file.close()
                 return my_dict
 
-        def check_subject(self, path):
+        def check_subject(self, msg, fname):
                 """
                 Inputs: path to dir
                 Outputs: none
                 Effects: Extract subjects from email 'Subject', check if email is SPAM or HAM, generate two dictionaries {email : subject}
-                """
-                truth = utils.read_classification_from_file(self.add_slash(path)+"!truth.txt")
-                corpus = Corpus(path)
-                for fname, body in corpus.emails_as_string():
-                        email_as_file = open(corpus.add_slash(path) + fname,'r', encoding = 'utf-8')
-                        msg = email.message_from_file(email_as_file)
-                        i = msg['Subject']
-                        if (truth[fname] == 'SPAM'):
-                                self.subjects_spam[i] = fname
-                        elif (truth[fname] == 'OK'):
-                                self.subjects_ham[i] = fname
-                self.generate_file_from_dict(path,'!subject_spam.pickle', self.subjects_spam) #TO DO : name of file!!!
-                self.generate_file_from_dict(path,'!subject_ham.pickle',self.subjects_ham)
+                """     
+                i = msg['Subject']
+                if (self.truth[fname] == 'SPAM'):
+                        self.subjects_spam[i] = fname
+                elif (self.truth[fname] == 'OK'):
+                        self.subjects_ham[i] = fname
+                self.generate_file_from_dict('!subject_spam.pickle', self.subjects_spam) #TO DO : name of file!!!
+                self.generate_file_from_dict('!subject_ham.pickle',self.subjects_ham)
                 
 
         def add_slash(self, path):
