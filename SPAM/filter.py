@@ -61,7 +61,21 @@ class MyFilter:
 
                 
                
-        def test(self, path_to_test_dir):                
+        def test(self, path_to_test_dir):
+            predictions = {}
+            dic = read_dict_from_file(self.path_bl)
+            dic1 = read_dict_from_file(self.path_ssl)
+            for fname, body in corpus.emails_as_string():
+                        email_as_file = open(addslash.add_slash(path_to_test_dir) + fname,'r',encoding = 'utf-8')
+                        msg = email.message_from_file(email_as_file)
+                        if ((extract_email_adress_from_text(msg['From']) in dic.values())or msg['Subject'] in dic1.values()):
+                            predictions[fname] = 'SPAM'
+                        else:
+                            predictions[fname] = 'OK'
+            bf = BaseFilter(path_to_test_dir,predictions)
+            bf.generate_prediction_file()
+                        
+            """
                 #######TESTING VARS##
                 ok = 0;
                 ok_counter = 0;
@@ -102,8 +116,19 @@ class MyFilter:
                                 sd[h] += 1
                             else:
                                 sd[h] = 1
-                        
-                        """try:
+                        try:
+                            if (self.a/gh > self.sa/hg):
+                                try:
+                                    print(self.a/gh, self.b/gh,self.c/gh, 'OK')
+                                except ZeroDivisionError:
+                                    print("ZERO")
+                                try:
+                                    print(self.sa/hg, self.sb/hg,self.sc/hg, 'SPAM')
+                                except ZeroDivisionError:
+                                    print('ZERO')
+                        except ZeroDivisionError:
+                                    print('')
+                        try:
                                  a = soup.font['color']
                         except (TypeError,KeyError):
                                 a = None
@@ -114,7 +139,7 @@ class MyFilter:
                                 b= None
                         if (b != None or a != None):
                                 #print(a,b)
-                                pass"""
+                                pass
                 hd = collections.OrderedDict(sorted(hd.items()))
                 sd = collections.OrderedDict(sorted(sd.items()))
 
@@ -125,13 +150,13 @@ class MyFilter:
                         xh_series.append(i)
                         yh_series.append(hd[i])
                         
-                """plt.gca().set_color_cycle(['red', 'blue'])
+                plt.gca().set_color_cycle(['red', 'blue'])
                 plt.plot(xs_series, ys_series)
                 plt.plot(xh_series, yh_series)                
                 plt.legend(['SPAM', 'HAM'], loc='upper left')
-                plt.show()"""
-                print(self.a,self.b,self.c)
-                print(self.sa,self.sb,self.sc)
+                plt.show()
+                print(self.a,self.b,self.c,gh)
+                print(self.sa,self.sb,self.sc,hg)
                 try:
                     print(self.a/gh, self.b/gh,self.c/gh, 'OK')
                 except ZeroDivisionError:
@@ -139,7 +164,7 @@ class MyFilter:
                 try:
                     print(self.sa/hg, self.sb/hg,self.sc/hg, 'SPAM')
                 except ZeroDivisionError:
-                    print('ZERO')
+                    print('ZERO')"""
                 
         
         def check_for_common_spammer_patters(self, msg, fname):               
@@ -250,18 +275,18 @@ class MyFilter:
                 if (self.truth[fname] == 'OK'):
         
                     try:
-                        words_without_vowels_proportion = alphabetic_words_counter/words_without_vowels_body_counter
+                        words_without_vowels_proportion = words_without_vowels_body_counter/alphabetic_words_counter
                         self.a += words_without_vowels_proportion 
                     except ZeroDivisionError:
                         self.a +=  0
                     try:
-                        words_with_at_lest_two_JKQXZ_proportion = alphabetic_words_counter/count_words_with_at_lest_two_JKQXZ
+                        words_with_at_lest_two_JKQXZ_proportion = count_words_with_at_lest_two_JKQXZ/alphabetic_words_counter
                         self.b += words_with_at_lest_two_JKQXZ_proportion 
                     except ZeroDivisionError:
                         self.b +=  0
                     
                     try:
-                        alphabetic_words_15_long_proportion = alphabetic_words_counter/count_alphabetic_words_15_long
+                        alphabetic_words_15_long_proportion = count_alphabetic_words_15_long/alphabetic_words_counter
                         self.c += alphabetic_words_15_long_proportion 
                     except ZeroDivisionError:
                         self.c +=  0
@@ -269,18 +294,18 @@ class MyFilter:
                 elif (self.truth[fname] == 'SPAM'):
         
                     try:
-                        words_without_vowels_proportion = alphabetic_words_counter/words_without_vowels_body_counter
+                        words_without_vowels_proportion = words_without_vowels_body_counter/alphabetic_words_counter
                         self.sa += words_without_vowels_proportion 
                     except ZeroDivisionError:
                         self.sa +=  0
                     try:
-                        words_with_at_lest_two_JKQXZ_proportion = alphabetic_words_counter/count_words_with_at_lest_two_JKQXZ
+                        words_with_at_lest_two_JKQXZ_proportion = count_words_with_at_lest_two_JKQXZ/alphabetic_words_counter
                         self.sb += words_with_at_lest_two_JKQXZ_proportion
                     except ZeroDivisionError:
                         self.sb =  0
                     
                     try:
-                        alphabetic_words_15_long_proportion = alphabetic_words_counter/count_alphabetic_words_15_long
+                        alphabetic_words_15_long_proportion = count_alphabetic_words_15_long/alphabetic_words_counter
                         self.sc += alphabetic_words_15_long_proportion 
                     except ZeroDivisionError:
                         self.sc +=  0
