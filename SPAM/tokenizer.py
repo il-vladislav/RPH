@@ -2,6 +2,8 @@
 #Python 3 ONLY
 ##########################################
 def shortphrase(shortphrase):
-        shortphrase = shortphrase.translate(str.maketrans('.',' '))
-        tokens = shortphrase.lower().split()
-        return tokens
+        if type(shortphrase) == str:
+                shortphrase = shortphrase.translate(str.maketrans('.',' '))
+                tokens = shortphrase.lower().split()
+                return tokens
+        return ""

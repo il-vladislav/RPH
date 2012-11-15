@@ -1,6 +1,12 @@
+# -*- coding: cp1252 -*-
 from Corpus import Corpus
 from basefilter import BaseFilter
+from sys import stdout
+from time import sleep
+from bs4 import BeautifulSoup
 
+import matplotlib.pyplot as plt
+import time
 import utils
 import email
 import os.path
@@ -9,6 +15,8 @@ import pickle
 import collections
 import basefilter
 import tokenizer
+import sys
+
 
 class MyFilter:
         def __init__(self):
@@ -17,46 +25,109 @@ class MyFilter:
                 self.senders_ham = {}
                 self.subjects_spam = {}
                 self.subjects_ham = {}
-
+                
+                
         def train(self,path_to_truth_dir):
                 self.extract_senders_list(path_to_truth_dir)
                 self.check_subject(path_to_truth_dir)
                
-        def test(self, path_to_test_dir):
-                pass
+        def test(self, path_to_test_dir):                
+                #######TESTING VARS##
+                ok = 0;
+                ok_counter = 0;
+                spam = 0;               
+                spam_counter = 0;
+                s=0;
+                o=0;
+                xs_series = []
+                ys_series = []
+                xh_series = []
+                yh_series = []
+                sd = {}
+                hd = {}
+                #####################
 
-        def check_for_common_spammer_patters(self, path):               
-                corpus = Corpus(path)
-                for fname, body in corpus.emails_as_string():
-                        email_as_file = open(corpus.add_slash(path) + fname,'r', encoding='utf-8')
+                
+                prediction = "SPAM";
+                corpus = Corpus(path_to_test_dir)
+                truth = utils.read_classification_from_file(self.add_slash(path_to_test_dir)+"!truth.txt")
+                print('subject_contains_repeated_letters, count_words_without_vowels,count_words_with_two_JKQXZ,count_words_with_15_symbol,count_words_only_uppercase,content_type_text_html,message_priority,words_without_vowels_body_counter,from_equals_to')
+                for fname, body in corpus.emails_as_string():              
+                        email_as_file = open(corpus.add_slash(path_to_test_dir) + fname,'r',encoding = 'utf-8')
                         msg = email.message_from_file(email_as_file)
+                        soup = BeautifulSoup(self.get_text(msg))
+                        a,b,c,d,e,f,g,h,i,j = self.check_for_common_spammer_patters(msg)
+                        if(a or f or g or i):
+                                pass
+                                #print(self.check_for_common_spammer_patters(msg), truth[fname])
+                        if h:
+                                if(truth[fname]=='OK'):
+                                        
+                                        if h in hd:
+                                                hd[h] += 1
+                                        else:
+                                                hd[h] = 1
+                                if(truth[fname]=='SPAM'):
+                                        
+                                        if h in sd:
+                                                sd[h] += 1
+                                        else:
+                                                       sd[h] = 1
+                        
+                        try:
+                                 a = soup.font['color']
+                                 print(a,truth[fname])
+                        except (TypeError,KeyError):
+                                pass
+                hd = collections.OrderedDict(sorted(hd.items()))
+                sd = collections.OrderedDict(sorted(sd.items()))
 
-                        #######################################################################
-                        #Subject vars
-                        subject_contains_repeated_letters = None
-                        count_words_without_vowels = 0  
-                        count_words_with_two_JKQXZ = 0
-                        count_words_with_15_symbol = 0
-                        count_words_only_uppercase = 0
+                for i in sd:
+                        xs_series.append(i)
+                        ys_series.append(sd[i])
+                for i in hd:
+                        xh_series.append(i)
+                        yh_series.append(hd[i])
+                        
+                plt.gca().set_color_cycle(['red', 'blue'])
+                plt.plot(xs_series, ys_series)
+                plt.plot(xh_series, yh_series)                
+                plt.legend(['SPAM', 'HAM'], loc='upper left')
+                plt.show()
+                
+                
+        
+        def check_for_common_spammer_patters(self, msg):               
+                #######################################################################
+                #Subject vars
+                subject_contains_repeated_letters = False
+                count_words_without_vowels = 0  
+                count_words_with_two_JKQXZ = 0
+                count_words_with_15_symbol = 0
+                count_words_only_uppercase = 0
 
-                        #######################################################################
-                        #Content type vars                                                    
-                        content_type_text_html = None
-                        message_priority = None
+                #######################################################################
+                #Content type vars                                                    
+                content_type_text_html = False
+                message_priority = False
 
-                        #######################################################################
-                        #Body vars
-                        words_without_vowels_body_counter = 0
+                #######################################################################
+                #Body vars
+                words_without_vowels_body_counter = 0
+                Number_of_HTML_opening_comment_tags = 0
+
+                from_equals_to = False
                         
+                two_letters = "jkqxz"
+                uppercase = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
                         
-                        two_letters = "jkqxz"
-                        uppercase = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+                #######################################################################
+                #Check for common spammer patters from subject header
+                #######################################################################
                         
-                        #######################################################################
-                        #Check for common spammer patters from subject header
-                        #######################################################################
-                        
-                        #Number of words with all letters in uppercase
+                
+                #Number of words with all letters in uppercase
+                if msg['Subject']:
                         for word in msg['Subject']:
                                 uppercase_counter = 0
                                 for letter in word:
@@ -65,59 +136,127 @@ class MyFilter:
                                 if uppercase_counter == len(word):
                                         count_words_only_uppercase += 1
 
-                        #Tokenize subject to string with all lower letters
-                        for word in tokenizer.shortphrase(msg['Subject']):
-                                two_letters_counter = 0
-                                for letter in word:
-                                        #Count 'J K Q X Z' letters in word
-                                        if letter in two_letters:
-                                                two_letters_counter += 1
+                #Tokenize subject to string with all lower letters
+                for word in tokenizer.shortphrase(msg['Subject']):
+                        two_letters_counter = 0
+                        for letter in word:
+                                #Count 'J K Q X Z' letters in word
+                                if letter in two_letters:
+                                        two_letters_counter += 1
                                 
-                                #Is word with no vowels?     
-                                if word_without_vowels(word): 
-                                        count_words_without_vowels += 1
+                        #Is word with no vowels?     
+                        if self.word_without_vowels(word): 
+                                count_words_without_vowels += 1
                                 
-                                #Is words with at least two of letters J, K, Q, X, Z?
-                                if two_letters_counter >= 2:
-                                        count_words_with_two_JKQXZ += 1
+                        #Is words with at least two of letters J, K, Q, X, Z?
+                        if two_letters_counter >= 2:
+                                count_words_with_two_JKQXZ += 1
                                 
-                                #Is word with at least 15 characters
-                                if len(word) >= 15:
-                                        count_words_with_15_symbol += 1
+                        #Is word with at least 15 characters
+                        if len(word) >= 15:
+                                count_words_with_15_symbol += 1
 
-                                #Binary feature indicating 3 or more repeated characters
-                                if re.search(r'(.)\1\1', word):
-                                        cont_words_with_repeat_sym = True
+                        #Binary feature indicating 3 or more repeated characters
+                        if re.search(r'(.)\1\1', word):
+                                cont_words_with_repeat_sym = True
 
-                        #######################################################################
-                        #Check for common spammer patters from Content-Type header and Priority
-                        #######################################################################
-                        for word in tokenizer.shortphrase(msg['Content-Type']):
-                                #Binary feature indicating the content type had been set to ‚Äútext/html‚Äù
-                                if word == ('text/html'):
-                                        content_type_text_html = True
+                #######################################################################
+                #Check for common spammer patters from Content-Type header and Priority
+                #######################################################################
+                for word in tokenizer.shortphrase(msg['Content-Type']):
+                #Binary feature indicating the content type had been set to ìtext/htmlî
+                        if word == ('text/html' or 'text/html;'):
+                                content_type_text_html = True
 
-                        #Binary feature indicating whether the priority had  been set to any level not None TODO : Do something here!
-                        for word in tokenizer.shortphrase(msg['Pirority']):
-                                if word != None:
-                                        message_priority = True
+                #Binary feature indicating whether the priority had  been set to any level not None TODO : Do something here!
+                for word in tokenizer.shortphrase(msg['Pirority']):
+                        if word != None:
+                                message_priority = True
 
-                        #######################################################################
-                        #Check for common spammer patters from body
-                        #######################################################################
-                        for word in tokenizer.shortphrase(msg.get_payload()):
-                                #Counter of alphabetic words with no vowels and at least 7 characters 
-                                if len(word)<7:
-                                        if word_without_vowels_checker(word):
+                #######################################################################
+                #Check for common spammer patters from body
+                #######################################################################
+                for word in tokenizer.shortphrase(msg.get_payload()):
+                        #Counter of alphabetic words with no vowels and at least 7 characters 
+                        if len(word)<7:
+                                if self.word_without_vowels(word):
                                                 words_without_vowels_body_counter += 1
                                                 
-                                #Counter of alphabetic words with at least two of letters J, K, Q, X, Z 
-                                
+                        #Counter of alphabetic words with at least two of letters J, K, Q, X, Z
 
                         
-                                        
+                #######################################################################
+                #Check for common non-spammer patters from FROM and TO
+                #######################################################################
+                FROM = tokenizer.shortphrase(self.extract_email_adress_from_text(msg['From']))
+                TO = tokenizer.shortphrase(self.extract_email_adress_from_text(msg['To']))
+                if (FROM==TO):
+                        from_equals_to = True
+
+                #######################################################################
+                #HTML
+                #######################################################################
+                Number_of_HTML_opening_comment_tags = self.find_in_string('<!--',' '.join(tokenizer.shortphrase((self.get_text(msg)))))
+                Number_of_hyperlinks = self.find_in_string('href=',' '.join(tokenizer.shortphrase((self.get_text(msg)))))
+                white_text = self.find_in_string('font color = "#ffffff"',' '.join(tokenizer.shortphrase(self.get_text(msg))))
+                white_text1 = self.find_in_string('color=3d"#ffffff"',' '.join(tokenizer.shortphrase(self.get_text(msg))))
+                #print(' '.join(tokenizer.shortphrase(self.get_text(msg))))
+                #print("\n" * 3)     
+                
+                return(subject_contains_repeated_letters, count_words_without_vowels,count_words_with_two_JKQXZ,count_words_with_15_symbol,count_words_only_uppercase,content_type_text_html,message_priority,words_without_vowels_body_counter,from_equals_to,white_text)
+
+
+
+        def get_text(self,msg):
+                """
+                Inputs: message (using email lib)
+                Outputs: message body
+                Effects: check if message is multipart and return body
+                """
+                
+                unicode = str
+                text = ""
+                html = None
+                if msg.is_multipart():
+                        for part in msg.get_payload():
+                                if part.get_content_charset() is None:
+                                    charset = 'utf-8'
+                                else:
+                                    charset = part.get_content_charset()
+                                if part.get_content_type() == 'text/plain':
+                                    text = unicode(part.get_payload().encode('utf8'))
+                                if part.get_content_type() == 'text/html':
+                                    html = unicode(part.get_payload().encode('utf8'))
+                        if html is None:
+                                return text.strip()
+                        else:
+                                return html.strip()
+                else:
+                    text = msg.get_payload()
+                    return text
+        
+        def find_in_string(self, target, string):
+                """
+                Inputs: target string, string
+                Outputs: number of target-strings in string
+                Effects: none
+                """
+                counter = 0                
+                i = string.find(target)
+                if (i != -1 and i != 0):
+                        while True:
+                                i = string.find(target, i+1)
+                                counter += 1
+                                if (i == -1):
+                                        break
+                return (counter)
 
         def word_without_vowels(self, word):
+                """
+                Inputs: word
+                Outputs: True or False
+                Effects: check, if words without vowels ('thx' is True, 'hi' is False)
+                """
                 vowels = "aeiuo"
                 consonant_counter = 0
                 for letter in word:
@@ -125,7 +264,7 @@ class MyFilter:
                                 consonant_counter += 1
                 if consonant_counter == len(word):
                         return True
-                else return False
+                return False
 
         def extract_senders_list(self, path):
                 """
@@ -136,7 +275,7 @@ class MyFilter:
                 truth = utils.read_classification_from_file(self.add_slash(path)+"!truth.txt")
                 corpus = Corpus(path)
                 for fname, body in corpus.emails_as_string():
-                        email_as_file = open(corpus.add_slash(path) + fname,'r')
+                        email_as_file = open(corpus.add_slash(path) + fname,'r', encoding='utf-8')
                         msg = email.message_from_file(email_as_file)
                         i = self.extract_email_adress_from_text(msg['From']) #we use this var as index, so name is 'i'
                         if (truth[fname] == 'SPAM'):
@@ -169,10 +308,12 @@ class MyFilter:
                 """
                 mfile = self.add_slash(path)+fname
                 if os.path.exists(mfile):
-                        mfile = open(mfile)
+                        mfile = open(self.add_slash(path)+fname,'rb')
                         my_existing_dict = pickle.load(mfile)
-                        my_new_dict = dict(my_existing_dict.items() + my_new_dict.items())
-                mfile = open(self.add_slash(path)+fname, 'w+')
+                        my_new_dict = my_new_dict.copy()
+                        my_new_dict.update(my_existing_dict)                        
+                        mfile.close()                
+                mfile = open(self.add_slash(path)+fname, 'wb+')
                 pickle.dump(my_new_dict, mfile)
                 mfile.close()
 
@@ -182,7 +323,7 @@ class MyFilter:
                 Outputs: dictionary from file
                 Effects: read existing dictionary from file [run test() before train()]
                 """                
-                pkl_file = open(self.add_slash(path)+fname)
+                pkl_file = open(self.add_slash(path)+fname, 'wb+')
                 my_dict = pickle.load(pkl_file)
                 pkl_file.close()
                 return my_dict
@@ -196,15 +337,15 @@ class MyFilter:
                 truth = utils.read_classification_from_file(self.add_slash(path)+"!truth.txt")
                 corpus = Corpus(path)
                 for fname, body in corpus.emails_as_string():
-                        email_as_file = open(corpus.add_slash(path) + fname,'r')
+                        email_as_file = open(corpus.add_slash(path) + fname,'r', encoding = 'utf-8')
                         msg = email.message_from_file(email_as_file)
                         i = msg['Subject']
                         if (truth[fname] == 'SPAM'):
                                 self.subjects_spam[i] = fname
                         elif (truth[fname] == 'OK'):
                                 self.subjects_ham[i] = fname
-                self.generate_file_from_dict(path,'!subject_spam.txt', self.subjects_spam) #TO DO : name of file!!!
-                self.generate_file_from_dict(path,'!subject_ham.txt',self.subjects_ham)
+                self.generate_file_from_dict(path,'!subject_spam.pickle', self.subjects_spam) #TO DO : name of file!!!
+                self.generate_file_from_dict(path,'!subject_ham.pickle',self.subjects_ham)
                 
 
         def add_slash(self, path):
@@ -216,7 +357,7 @@ class MyFilter:
                 if path.endswith("/"): return path
                 return path + "/"
 
- #TO DO Number of words with non-English characters, special characters such as punctuation, or digits at beginning or middle of word         
+         #TO DO Number of words with non-English characters, special characters such as punctuation, or digits at beginning or middle of word         
         """def word_with_digits_checker(self, word):
                 begin_searcher = re.compile(r'[0-9]+[\w\-]')
                 middle_searcher = re.compile(r'[\w\-]+[0-9]+[\w\-]')
