@@ -62,20 +62,22 @@ class MyFilter:
                 
                
         def test(self, path_to_test_dir):
-            predictions = {}
-            dic = read_dict_from_file(self.path_bl)
-            dic1 = read_dict_from_file(self.path_ssl)
-            for fname, body in corpus.emails_as_string():
+                corpus = Corpus(path_to_test_dir)
+                predictions = {}
+                dic = self.read_dict_from_file(self.path_bl)
+                dic1 = self.read_dict_from_file(self.path_ssl)
+                dic2 = self.read_dict_from_file(self.path_gl)
+                for fname, body in corpus.emails_as_string():
                         email_as_file = open(addslash.add_slash(path_to_test_dir) + fname,'r',encoding = 'utf-8')
                         msg = email.message_from_file(email_as_file)
-                        if ((extract_email_adress_from_text(msg['From']) in dic.values())or msg['Subject'] in dic1.values()):
-                            predictions[fname] = 'SPAM'
+                        if (self.extract_email_adress_from_text(msg['From']) in dic.values()):
+                                predictions[fname] = 'SPAM'
                         else:
-                            predictions[fname] = 'OK'
-            bf = BaseFilter(path_to_test_dir,predictions)
-            bf.generate_prediction_file()
+                                predictions[fname] = 'OK'
+                bf = BaseFilter(path_to_test_dir,predictions)
+                bf.generate_prediction_file()
                         
-            """
+                """
                 #######TESTING VARS##
                 ok = 0;
                 ok_counter = 0;
