@@ -18,6 +18,7 @@ import basefilter
 import tokenizer
 import sys
 import addslash
+import random
 
 
 class MyFilter:
@@ -70,10 +71,12 @@ class MyFilter:
                 for fname, body in corpus.emails_as_string():
                         email_as_file = open(addslash.add_slash(path_to_test_dir) + fname,'r',encoding = 'utf-8')
                         msg = email.message_from_file(email_as_file)
-                        if (self.extract_email_adress_from_text(msg['From']) in dic.values()):
+                        if (self.extract_email_adress_from_text(msg['From']) in dic):
                                 predictions[fname] = 'SPAM'
-                        else:
+                        elif(self.extract_email_adress_from_text(msg['From']) not in dic or self.extract_email_adress_from_text(msg['From']) in dic2):
                                 predictions[fname] = 'OK'
+                        else:
+                                predictions[fname] = 'SPAM'
                 bf = BaseFilter(path_to_test_dir,predictions)
                 bf.generate_prediction_file()
                         
@@ -347,8 +350,7 @@ class MyFilter:
                 Inputs: message (using email lib)
                 Outputs: message body
                 Effects: check if message is multipart and return body
-                """
-                
+                """                
                 unicode = str
                 text = ""
                 html = None
