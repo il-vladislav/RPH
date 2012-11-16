@@ -6,7 +6,7 @@ from time import sleep
 from bs4 import BeautifulSoup
 from string import ascii_letters
 
-import matplotlib.pyplot as plt
+#import matplotlib.pyplot as plt
 import time
 import utils
 import email
@@ -23,10 +23,10 @@ import addslash
 class MyFilter:
         def __init__(self):
                 ###To quick and easy refactor###
-                self.path_bl = '!black_list.pickle'
-                self.path_gl = '!gray_list.pickle'
-                self.path_ssl = '!spam_subject_list.pickle'
-                self.path_hsl = '!ham_subject_list.pickle'
+                self.path_bl = 'black_list.txt'
+                self.path_gl = 'gray_list.txt'
+                self.path_ssl = 'spam_subject_list.txt'
+                self.path_hsl = 'ham_subject_list.txt'
                 
                 self.black_list = {} #Email-addresses marked as SPAM
                 self.gray_list = {} #Email-addresses marked as OK
