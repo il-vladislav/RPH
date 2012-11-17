@@ -342,7 +342,16 @@ class MyFilter:
                         if a == i:"""
 
                 white_text = 1
-                return(subject_contains_repeated_letters, count_words_without_vowels,count_words_with_two_JKQXZ,count_words_with_15_symbol,count_words_only_uppercase,content_type_text_html,message_priority,words_without_vowels_body_counter,from_equals_to,white_text)
+                return(subject_contains_repeated_letters,
+                       count_words_without_vowels,
+                       count_words_with_two_JKQXZ,
+                       count_words_with_15_symbol,
+                       count_words_only_uppercase,
+                       content_type_text_html,
+                       message_priority,
+                       words_without_vowels_body_counter,
+                       from_equals_to,
+                       white_text)
 
 
         def get_text(self,msg):
