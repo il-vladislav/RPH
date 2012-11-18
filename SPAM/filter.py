@@ -22,27 +22,17 @@ import Bayesian
 
 class MyFilter:
         def __init__(self):
-                ###To quick and easy refactor###
-                self.path_bl = 'black_list.txt'
-                self.path_gl = 'gray_list.txt'
-                self.path_ssl = 'spam_subject_list.txt'
-                self.path_hsl = 'ham_subject_list.txt'
+                self.path_bl = 'black_list.pickle'
+                self.path_wl = 'white_list.pickle'
+                self.path_ssl = 'spam_subject_list.pickle'
+                self.path_hsl = 'ham_subject_list.pickle'
                 
                 self.black_list = {} #Email-addresses marked as SPAM
-                self.gray_list = {} #Email-addresses marked as OK
+                self.white_list = {} #Email-addresses marked as OK
                 self.spam_subject_list = {} #Email-subjects marked as SPAM
                 self.ham_subject_list = {} #Email-subjects marked as OK
                 
                 self.truth = None #!trurh.txt dict
-
-
-                ###########DELETE###########
-                self.a = 0
-                self.b = 0
-                self.c = 0 
-                self.sa = 0 
-                self.sb = 0
-                self.sc = 0
                 
         def train(self,path_to_truth_dir):
                 corpus = Corpus(path_to_truth_dir)
@@ -55,7 +45,7 @@ class MyFilter:
                         self.check_subject(msg,fname)
                         
                 methods.generate_file_from_dict(self.path_bl , self.black_list)
-                methods.generate_file_from_dict(self.path_gl ,self.gray_list)
+                methods.generate_file_from_dict(self.path_wl ,self.white_list)
                 methods.generate_file_from_dict(self.path_ssl , self.spam_subject_list)
                 methods.generate_file_from_dict(self.path_hsl ,self.ham_subject_list)
 
@@ -67,7 +57,7 @@ class MyFilter:
                 predictions = {}
                 dic = methods.read_dict_from_file(self.path_bl)
                 dic1 = methods.read_dict_from_file(self.path_ssl)
-                dic2 = methods.read_dict_from_file(self.path_gl)
+                dic2 = methods.read_dict_from_file(self.path_wl)
                 for fname, body in corpus.emails_as_string():
                         email_as_file = open(methods.add_slash(path_to_test_dir) + fname,'r',encoding = 'utf-8')
                         msg = email.message_from_file(email_as_file)
@@ -133,7 +123,7 @@ class MyFilter:
                 if (self.truth[fname] == 'SPAM'):
                         self.black_list[i] = fname 
                 elif (self.truth[fname] == 'OK'):
-                        self.gray_list[i] = fname
+                        self.white_list[i] = fname
                                        
 
         def extract_email_adress_from_text(self, text):
