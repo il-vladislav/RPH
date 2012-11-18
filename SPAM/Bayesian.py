@@ -1,12 +1,11 @@
-from filter import MyFilter
 import csv
-import filter
 import tokenizer
+import pickle
+
 class Bayesian:
         def __init__(self):
-                mf = MyFilter()
-                self.ham_dict = mf.read_dict_from_file('ham_df.pickle')
-                self.spam_dict = mf.read_dict_from_file('spam_df.pickle')
+                self.ham_dict = self.read_dict_from_file('ham_df.pickle')
+                self.spam_dict = self.read_dict_from_file('spam_df.pickle')
 
         def create_dic_from_cvs(self,path,fname):
                 dic = {}
@@ -19,8 +18,7 @@ class Bayesian:
                                 a = a[2]
                                 a =  float(a)
                                 dic[b]=a
-                        mf = MyFilter()
-                        mf.generate_file_from_dict(fname, dic)
+                        self.generate_file_from_dict(fname, dic)
                         for i in dic:
                                 print(i, type(dic[i]))
 
@@ -45,7 +43,6 @@ class Bayesian:
                 msg = msg.replace('!','')
                 msg = msg.replace('?','')
                 msg = msg.split(' ')
-                mf = MyFilter()
                 for word in msg:
                         if tokenizer.shortphrase(word):
                                 msg1.append(word)                        
@@ -60,5 +57,16 @@ class Bayesian:
                         print('1.0')
                         pred = 1.0
                 return pred
+
+        def read_dict_from_file(self,fname):
+                """
+                Inputs:  name of file with dictionary
+                Outputs: dictionary from file
+                Effects: read existing dictionary from file [run test() before train()]
+                """                
+                pkl_file = open(fname, 'rb')
+                my_dict = pickle.load(pkl_file)
+                pkl_file.close()
+                return my_dict
                 
 
