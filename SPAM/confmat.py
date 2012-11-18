@@ -11,20 +11,22 @@ class BinaryConfusionMatrix:
         def as_dict(self):
                 return(self.tf_matrix)
 
-        def update(self, truth, pred):
+        def update(self, truth, pred, i):
                 if (truth == self.pos_tag):
                         if(pred == self.pos_tag):
                                 self.tf_matrix['tp'] += 1
                         else:
                                 self.tf_matrix['fn'] += 1
+                                print(i)
                 else:
                         if(pred != self.pos_tag):
                                 self.tf_matrix['tn'] += 1
                         else:
                                 self.tf_matrix['fp'] += 1
+                                print(i)
                       
         def compute_from_dicts(self, truth_dict, pred_dict):
                 for i in truth_dict.keys():
-                        self.update(truth_dict[i],pred_dict[i])
+                        self.update(truth_dict[i],pred_dict[i], i)
                 
         

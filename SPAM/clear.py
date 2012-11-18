@@ -13,6 +13,7 @@ def clear(path_to_dir):
                 counter1 += 1
                 print("Try remove")
                 os.remove(path_to_dir+file_name)
+                print(file_name)
             except WindowsError:
                 counter2 +=1
                 print("MOTHERFUCKER!")
