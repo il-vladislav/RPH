@@ -12,7 +12,7 @@ class Bayesian:
         def __init__(self):
                 self.ham_dict = methods.read_dict_from_file('ham_df.pickle')
                 self.spam_dict = methods.read_dict_from_file('spam_df.pickle')
-
+                self.spamicity = methods.read_dict_from_file('spamicity.pickle')
         def create_dic_from_cvs(self,path,fname):
                 dic = {}
                 with open(path, 'r') as csvfile:
@@ -51,14 +51,15 @@ class Bayesian:
                 msg = msg.split(' ')
                 for word in msg:
                         re.sub('[^A-Za-z0-9]+', '', word)
-                        msg1.append(tokenizer.shortphrase(word))                     
-                for word in msg1:
-                        a[word] = self.word_spamicity(word)
-                for word in a:
-                        up = up*a[word]
-                        down = down*(1.0-a[word]+0.0000000000000001)
-                
-                pred = up / (up+down)                
+                        msg1.append(word.lower())                     
+                #for word in msg1:
+                        #a[word] = self.word_spamicity(word)
+                for word in self.spamicity:
+                        up = up*self.spamicity[word]
+                        down = down*(1.0-(self.spamicity[word]-0.000000000000001))
+                if (up == 0 or down == 0):
+                        up = 0.5
+                pred = up/(up+down)                
                 return pred
 
 

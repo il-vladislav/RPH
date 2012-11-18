@@ -61,17 +61,15 @@ class MyFilter:
                 for fname, body in corpus.emails_as_string():
                         email_as_file = open(methods.add_slash(path_to_test_dir) + fname,'r',encoding = 'utf-8')
                         msg = email.message_from_file(email_as_file)
-                        if (self.extract_email_adress_from_text(msg['From']) in dic):
+                        """if (self.extract_email_adress_from_text(msg['From']) in dic):
                                 predictions[fname] = 'SPAM'
                         elif(self.extract_email_adress_from_text(msg['From']) in dic2):
                                 predictions[fname] = 'OK'
+                        else:"""
+                        if (bs.bayesian_prediction(methods.get_text(msg))) > 0.35:
+                                predictions[fname] = 'SPAM'
                         else:
-                                if (fname == '01300.bcd95d40246e03dcfcb088ab69a9c953'):
-                                        print('its else')
-                                if (bs.bayesian_prediction(methods.get_text(msg))) > 0.5:
-                                        predictions[fname] = 'SPAM'
-                                else:
-                                        predictions[fname] = 'OK'
+                                predictions[fname] = 'OK'
                                         
                 bf = BaseFilter(path_to_test_dir,predictions)
                 bf.generate_prediction_file()
