@@ -77,6 +77,22 @@ class MyFilter:
                                 predictions[fname] = 'OK'
                         else:
                                 predictions[fname] = 'SPAM'
+                
+
+
+                        subject_contains_repeated_letters,count_words_without_vowels,count_words_with_two_JKQXZ,count_words_with_15_symbol,count_words_only_uppercase,content_type_text_html,message_priority,words_without_vowels_body_counter,from_equals_to,white_text = self.check_for_common_spammer_patters(msg,fname)
+
+                        """print(,
+                        count_words_without_vowels,
+                        count_words_with_two_JKQXZ,
+                        count_words_with_15_symbol,
+                        count_words_only_uppercase,
+                        content_type_text_html,
+                        message_priority,
+                        words_without_vowels_body_counter,
+                        from_equals_to,
+                        white_text, self.truth[fname])"""
+                
                 bf = BaseFilter(path_to_test_dir,predictions)
                 bf.generate_prediction_file()
                         
@@ -276,46 +292,25 @@ class MyFilter:
                         count_alphabetic_words_15_long += 1
                 if JKQXZ >1:
                     count_words_with_at_lest_two_JKQXZ += 1
+                    
                 #Proportion of alphabetic words with no vowels and at least 7 characters
-                if (self.truth[fname] == 'OK'):
-        
-                    try:
+                try:
                         words_without_vowels_proportion = words_without_vowels_body_counter/alphabetic_words_counter
                         self.a += words_without_vowels_proportion 
-                    except ZeroDivisionError:
+                except ZeroDivisionError:
                         self.a +=  0
-                    try:
+                try:
                         words_with_at_lest_two_JKQXZ_proportion = count_words_with_at_lest_two_JKQXZ/alphabetic_words_counter
                         self.b += words_with_at_lest_two_JKQXZ_proportion 
-                    except ZeroDivisionError:
+                except ZeroDivisionError:
                         self.b +=  0
                     
-                    try:
+                try:
                         alphabetic_words_15_long_proportion = count_alphabetic_words_15_long/alphabetic_words_counter
                         self.c += alphabetic_words_15_long_proportion 
-                    except ZeroDivisionError:
-                        self.c +=  0
-        
-                elif (self.truth[fname] == 'SPAM'):
-        
-                    try:
-                        words_without_vowels_proportion = words_without_vowels_body_counter/alphabetic_words_counter
-                        self.sa += words_without_vowels_proportion 
-                    except ZeroDivisionError:
-                        self.sa +=  0
-                    try:
-                        words_with_at_lest_two_JKQXZ_proportion = count_words_with_at_lest_two_JKQXZ/alphabetic_words_counter
-                        self.sb += words_with_at_lest_two_JKQXZ_proportion
-                    except ZeroDivisionError:
-                        self.sb =  0
-                    
-                    try:
-                        alphabetic_words_15_long_proportion = count_alphabetic_words_15_long/alphabetic_words_counter
-                        self.sc += alphabetic_words_15_long_proportion 
-                    except ZeroDivisionError:
-                        self.sc +=  0
-                
-                #print(words_without_vowels_proportion,words_with_at_lest_two_JKQXZ_proportion,alphabetic_words_15_long_proportion,self.truth[fname])
+                except ZeroDivisionError:
+                        self.c +=  0                
+                print(words_without_vowels_proportion,words_with_at_lest_two_JKQXZ_proportion,alphabetic_words_15_long_proportion,self.truth[fname])
                 
                 #######################################################################
                 #Check for common non-spammer patters from FROM and TO
@@ -330,18 +325,19 @@ class MyFilter:
                 #######################################################################
                 Number_of_HTML_opening_comment_tags = self.find_in_string('<!--',' '.join(tokenizer.shortphrase((self.get_text(msg)))))
                 Number_of_hyperlinks = self.find_in_string('href=',' '.join(tokenizer.shortphrase((self.get_text(msg)))))
-                """White_text = ['3D#ff0000', 'red', '3D"#000000"', '3D"#FF0000"', '3D"blue"', '#333333', '3D"#ffffff"', '#ffff80', '3D"#0000FF"', '#000000', '3D#000000', '3D"white"', '#800000', '3D#000000', '3D#0000ff', '3D"blue"', 'red', '#ff0000', '3D"#0000FF"', '3D"blue"', '3D"blue"', '#FF0033', '3D#000000', '#0000FF', '202498', '3D"#FFFFFF"', '#999999', '3D"#000066"', '000000', '#ff6600', '3D#000000', '#ff0000', '3D"#000066"', '3D#ffffff', '3D"#33333=', '3D#FF0000', '#999999', '3D"#00FF00"', 'black', '#fd0000', '#ff6600', 'black', '3D"#000066"', '#333366', '#FFFF00', '3D=22=23FF0000=22', '#FFFFFF', '3D"#008000"', '#2e4361', '3D"#000000"', 'black', 'black', 'black', '#666666', '3D"#FFFFFF"', '#666666', '#333333', '3D#000000', 'blue', '#333333', '#000000', '3D"#FFFF00"', '3D"#CC3333"', '3D"#FFFFFF"', '#000000', '3D"#FFFFFF"', '#999999', '#ff0000', '#ff0000', '#ff0000', '3D"#000066"', '3D"#FFFFFF"', '#FF0000', '3D"#000066"', '3D#ff0000', '3D"ED1C24"', '3D"ED1C24"', '3D#000000', '#666666', '3D"#FFFFFF"', '#000000', 'Firebrick', '#FFFFFF', '#3333FF', '#33CC99', '3D=22=23990000=22', '3D=23ffffff', '#000080', '#ff0000', '#000000', '3D"#66FF00"', '#000000', '#000080', '3D"#99ffff"', '#000000', 'gray', '3D=23ffffff', '#FFFFFF', 'gray', '#ffffff', '3Dred', '3D"#FF0000"', '#000000', '#000000', '3D=22=23=', '3D"#000080"', '#0000FF', '#000080', '3D=23ffffff', '#294D7F', '3D=23ffffff', '#000080', '#FFFFFF', '#FF0000', '3D#000000', '3D"#000066"', '#ff8080', '3D"#000080"', '3D"#0033=', '#ffffff', 'Firebrick', '#FF0000', '3D"487EB3"', '3D#000000', '3D#000000', '3D"#ffffff"', '#ff0000', 'Silver', '#FF0000', '3D"#333333"', '#660000']
+                White_text_examples = ['3D#ff0000', 'red', '3D"#000000"', '3D"#FF0000"', '3D"blue"', '#333333', '3D"#ffffff"', '#ffff80', '3D"#0000FF"', '#000000', '3D#000000', '3D"white"', '#800000', '3D#000000', '3D#0000ff', '3D"blue"', 'red', '#ff0000', '3D"#0000FF"', '3D"blue"', '3D"blue"', '#FF0033', '3D#000000', '#0000FF', '202498', '3D"#FFFFFF"', '#999999', '3D"#000066"', '000000', '#ff6600', '3D#000000', '#ff0000', '3D"#000066"', '3D#ffffff', '3D"#33333=', '3D#FF0000', '#999999', '3D"#00FF00"', 'black', '#fd0000', '#ff6600', 'black', '3D"#000066"', '#333366', '#FFFF00', '3D=22=23FF0000=22', '#FFFFFF', '3D"#008000"', '#2e4361', '3D"#000000"', 'black', 'black', 'black', '#666666', '3D"#FFFFFF"', '#666666', '#333333', '3D#000000', 'blue', '#333333', '#000000', '3D"#FFFF00"', '3D"#CC3333"', '3D"#FFFFFF"', '#000000', '3D"#FFFFFF"', '#999999', '#ff0000', '#ff0000', '#ff0000', '3D"#000066"', '3D"#FFFFFF"', '#FF0000', '3D"#000066"', '3D#ff0000', '3D"ED1C24"', '3D"ED1C24"', '3D#000000', '#666666', '3D"#FFFFFF"', '#000000', 'Firebrick', '#FFFFFF', '#3333FF', '#33CC99', '3D=22=23990000=22', '3D=23ffffff', '#000080', '#ff0000', '#000000', '3D"#66FF00"', '#000000', '#000080', '3D"#99ffff"', '#000000', 'gray', '3D=23ffffff', '#FFFFFF', 'gray', '#ffffff', '3Dred', '3D"#FF0000"', '#000000', '#000000', '3D=22=23=', '3D"#000080"', '#0000FF', '#000080', '3D=23ffffff', '#294D7F', '3D=23ffffff', '#000080', '#FFFFFF', '#FF0000', '3D#000000', '3D"#000066"', '#ff8080', '3D"#000080"', '3D"#0033=', '#ffffff', 'Firebrick', '#FF0000', '3D"487EB3"', '3D#000000', '3D#000000', '3D"#ffffff"', '#ff0000', 'Silver', '#FF0000', '3D"#333333"', '#660000']
                 soup = BeautifulSoup(self.get_text(msg))
                 a = 'none'
-                for i in White_text:
+                white_text = False
+                for i in White_text_examples:
                         try:
                                 a = soup.font['color']
                         except (KeyError,TypeError):
                                 pass
                         
-                        if a == i:"""
-
-                white_text = 1
+                        if a == i:
+                                white_text = True
+                                
                 return(subject_contains_repeated_letters,
                        count_words_without_vowels,
                        count_words_with_two_JKQXZ,
