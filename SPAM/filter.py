@@ -19,6 +19,7 @@ import tokenizer
 import sys
 import addslash
 import random
+import Bayesian
 
 
 class MyFilter:
@@ -63,6 +64,7 @@ class MyFilter:
                 
                
         def test(self, path_to_test_dir):
+                bs = Bayesian.Bayesian() 
                 corpus = Corpus(path_to_test_dir)
                 predictions = {}
                 dic = self.read_dict_from_file(self.path_bl)
@@ -73,14 +75,18 @@ class MyFilter:
                         msg = email.message_from_file(email_as_file)
                         if (self.extract_email_adress_from_text(msg['From']) in dic):
                                 predictions[fname] = 'SPAM'
-                        elif(self.extract_email_adress_from_text(msg['From']) not in dic or self.extract_email_adress_from_text(msg['From']) in dic2):
+                        elif(self.extract_email_adress_from_text(msg['From']) in dic2):
                                 predictions[fname] = 'OK'
                         else:
-                                predictions[fname] = 'SPAM'
+                                if (bs.bayesian_prediction(self.get_text(msg))) > 0.5:
+                                        predictions[fname] = 'SPAM'
+                                else:
+                                        predictions[fname] = 'OK'                                            
+                        
                 
 
 
-                        subject_contains_repeated_letters,count_words_without_vowels,count_words_with_two_JKQXZ,count_words_with_15_symbol,count_words_only_uppercase,content_type_text_html,message_priority,words_without_vowels_body_counter,from_equals_to,white_text = self.check_for_common_spammer_patters(msg,fname)
+                        #subject_contains_repeated_letters,count_words_without_vowels,count_words_with_two_JKQXZ,count_words_with_15_symbol,count_words_only_uppercase,content_type_text_html,message_priority,words_without_vowels_body_counter,from_equals_to,white_text = self.check_for_common_spammer_patters(msg,fname)
 
                         """print(,
                         count_words_without_vowels,
@@ -310,7 +316,7 @@ class MyFilter:
                         self.c += alphabetic_words_15_long_proportion 
                 except ZeroDivisionError:
                         self.c +=  0                
-                print(words_without_vowels_proportion,words_with_at_lest_two_JKQXZ_proportion,alphabetic_words_15_long_proportion,self.truth[fname])
+                #print(words_without_vowels_proportion,words_with_at_lest_two_JKQXZ_proportion,alphabetic_words_15_long_proportion,self.truth[fname])
                 
                 #######################################################################
                 #Check for common non-spammer patters from FROM and TO
