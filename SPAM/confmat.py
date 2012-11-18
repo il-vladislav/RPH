@@ -17,13 +17,11 @@ class BinaryConfusionMatrix:
                                 self.tf_matrix['tp'] += 1
                         else:
                                 self.tf_matrix['fn'] += 1
-                                print(i)
                 else:
                         if(pred != self.pos_tag):
                                 self.tf_matrix['tn'] += 1
                         else:
                                 self.tf_matrix['fp'] += 1
-                                print(i)
                       
         def compute_from_dicts(self, truth_dict, pred_dict):
                 for i in truth_dict.keys():

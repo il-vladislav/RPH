@@ -19,6 +19,13 @@ import methods
 import random
 import Bayesian
 
+#It is a pretty simple version of my filter. I start working on it with creating method's like "Check for common spammers pattern",
+#contains "Number of words with no vowels", "Number of words with at least two of letters J, K, Q, X, Z", "Number of words with at least 15 characters",
+#"Binary feature indicating whether the strings “From:” and “To:” were both present", e.t.c
+#(Based on this work "http://stat.wvu.edu/~dluo/CS791A/project_proposal.pdf").
+#But when I write it and check on training data set(461:SPAM, 153:HAM), all patterns triggered without any pattern.
+#I visualized 
+
 
 class MyFilter:
         def __init__(self):
@@ -36,80 +43,62 @@ class MyFilter:
                 
         def train(self,path_to_truth_dir):
                 corpus = Corpus(path_to_truth_dir)
+                #Read truth file
                 truth = utils.read_classification_from_file(methods.add_slash(path_to_truth_dir)+"!truth.txt")
+                #Make truth global
                 self.truth = truth
-                for fname, body in corpus.emails_as_string():              
+                for fname, body in corpus.emails_as_string():
                         email_as_file = open(methods.add_slash(path_to_truth_dir) + fname,'r',encoding = 'utf-8')
+                        #Read email with EMAIL parser
                         msg = email.message_from_file(email_as_file)
                         self.extract_senders_list(msg,fname)
                         self.check_subject(msg,fname)
-                        
+
+                #Generate dict's
                 methods.generate_file_from_dict(self.path_bl , self.black_list)
                 methods.generate_file_from_dict(self.path_wl ,self.white_list)
                 methods.generate_file_from_dict(self.path_ssl , self.spam_subject_list)
                 methods.generate_file_from_dict(self.path_hsl ,self.ham_subject_list)
-
-                
+                #Bayesian already trained on big data set
+                                
                
         def test(self, path_to_test_dir):
-                bs = Bayesian.Bayesian() 
+                predictions = {} #Predictions dict {fname:prediction}
+                bs = Bayesian.Bayesian()
                 corpus = Corpus(path_to_test_dir)
-                predictions = {}
-                dic = methods.read_dict_from_file(self.path_bl)
-                dic1 = methods.read_dict_from_file(self.path_ssl)
-                dic2 = methods.read_dict_from_file(self.path_wl)
+                #Read dict's (if test called before train)
+                black_list_dict = methods.read_dict_from_file(self.path_bl)
+                white_list_dict = methods.read_dict_from_file(self.path_wl)
+                spam_subject_dict = methods.read_dict_from_file(self.path_ssl)
+                ham_subject_dict = methods.read_dict_from_file(self.path_hsl)
+                
                 for fname, body in corpus.emails_as_string():
+                        #Open email with parser
                         email_as_file = open(methods.add_slash(path_to_test_dir) + fname,'r',encoding = 'utf-8')
                         msg = email.message_from_file(email_as_file)
-                        """if (self.extract_email_adress_from_text(msg['From']) in dic):
+
+                        #Check if sender in a black list
+                        if (self.extract_email_adress_from_text(msg['From']) in black_list_dict):
                                 predictions[fname] = 'SPAM'
-                        elif(self.extract_email_adress_from_text(msg['From']) in dic2):
+                        elif(self.extract_email_adress_from_text(msg['From']) in white_list_dict):
+                        #Check if sender in a white list
                                 predictions[fname] = 'OK'
-                        else:"""
-                        if (bs.bayesian_prediction(methods.get_text(msg))) > 0.35:
-                                predictions[fname] = 'SPAM'
-                        else:
-                                predictions[fname] = 'OK'
-                                        
+                        #Check if subject in a black list
+                        elif(self.extract_email_adress_from_text(msg['From']) in spam_subject_dict):
+                             prediction[fname] = 'SPAM'
+                        #Check if subject in a white list
+                        elif(self.extract_email_adress_from_text(msg['From']) in ham_subject_dict):
+                                prediction[fname] = 'OK'
+                        #Run Bayesian checker
+                        else:                
+                                if (bs.bayesian_prediction(methods.get_text(msg))) > 0.485:
+                                        predictions[fname] = 'SPAM'
+                                else:
+                                        predictions[fname] = 'OK'
+
+                #Generate prediction file
                 bf = BaseFilter(path_to_test_dir,predictions)
                 bf.generate_prediction_file()
-                
-
-        def find_alphabetic_words(self, text):
-                letters = ascii_letters
-                letters_nd_term = letters + "?!,."
-                return not any([set(text[:-1]).difference(letters),text[-1] not in letters_nd_term])
-
-        def find_in_string(self, target, string):
-                """
-                Inputs: target string, string
-                Outputs: number of target-strings in string
-                Effects: none
-                """
-                counter = 0                
-                i = string.find(target)
-                if (i != -1 and i != 0):
-                        while True:
-                                i = string.find(target, i+1)
-                                counter += 1
-                                if (i == -1):
-                                        break
-                return (counter)
-
-        def word_without_vowels(self, word):
-                """
-                Inputs: word
-                Outputs: True or False
-                Effects: check, if words without vowels ('thx' is True, 'hi' is False)
-                """
-                vowels = "aeiuo"
-                consonant_counter = 0
-                for letter in word:
-                        if letter not in vowels:
-                                consonant_counter += 1
-                if consonant_counter == len(word):
-                        return True
-                return False
 
         def extract_senders_list(self, msg, fname):
                 """
