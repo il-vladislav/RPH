@@ -1,11 +1,9 @@
 from string import ascii_letters
-import utils
 import email
 import os.path
 import re
 import pickle
 import collections
-import tokenizer
 import sys
 import random
 
@@ -57,12 +55,26 @@ def read_dict_from_file(fname):
         """
         Inputs:  name of file with dictionary
         Outputs: dictionary from file
-        Effects: read existing dictionary from file [run test() before train()]
+        Effects: read existing dictionary from file
         """                
         pkl_file = open(fname, 'rb')
         my_dict = pickle.load(pkl_file)
         pkl_file.close()
         return my_dict
+
+def read_classification_from_file(path):
+        """
+        Inputs:  path to file with dict
+        Outputs: dictionary from file
+        Effects: read existing dictionary from file
+        """  
+        myfile = open(path, "r")
+        mydict = {}
+        for line in myfile:
+                x = line.split(" ")
+                x[1]=x[1].replace("\n","")
+                mydict[x[0]]=x[1]
+        return mydict
 
         
 def add_slash(path):
@@ -73,3 +85,14 @@ def add_slash(path):
         """
         if path.endswith("/"): return path
         return path + "/"
+
+def shortphrase(shortphrase):
+        """
+        Inputs: string
+        Outputs: list contains rods with lowel letters, splited
+        """
+        if type(shortphrase) == str:
+                shortphrase = shortphrase.translate(str.maketrans('.',' '))
+                tokens = shortphrase.lower().split()
+                return tokens
+        return ""

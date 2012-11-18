@@ -1,14 +1,13 @@
 from __future__ import division
 from confmat import BinaryConfusionMatrix
-import utils
 import methods
 
 def quality_score(tp, tn, fp, fn):       
         return (tp+tn)/(tp+tn+10*fp+fn)
 
 def compute_quality_for_corpus(corpus_dir):
-        truth_dic = utils.read_classification_from_file(methods.add_slash(corpus_dir)+"!truth.txt")
-        pred_dic = utils.read_classification_from_file(methods.add_slash(corpus_dir)+"!prediction.txt")
+        truth_dic = methods.read_classification_from_file(methods.add_slash(corpus_dir)+"!truth.txt")
+        pred_dic = methods.read_classification_from_file(methods.add_slash(corpus_dir)+"!prediction.txt")
         bc1 = BinaryConfusionMatrix('SPAM', 'OK')
         bc1.compute_from_dicts(truth_dic, pred_dic)
         dict_score = bc1.as_dict()

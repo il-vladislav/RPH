@@ -1,6 +1,5 @@
 import random
 import methods
-import utils
 class TrainingCorpus:
         def __init__(self, path):
                 self.path = path if path else []
@@ -10,13 +9,13 @@ class TrainingCorpus:
                 return 'OK'
 
         def is_ham(self,email_name):
-                my_dict = utils.read_classification_from_file(self.path,'!truth.txt')
+                my_dict = methods.read_classification_from_file(self.path,'!truth.txt')
                 if (my_dict[email_name] == 'HAM'):
                         return True
                 return False
 
         def is_spam(self,email_name):
-                my_dict = utils.read_classification_from_file(self.path,'!truth.txt')
+                my_dict = methods.read_classification_from_file(self.path,'!truth.txt')
                 if (my_dict[email_name] == 'SPAM'):
                         return True
                 return False

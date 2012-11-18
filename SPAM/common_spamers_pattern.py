@@ -158,3 +158,59 @@ def check_for_common_spammer_patters(self, msg, fname):
                        words_without_vowels_body_counter,
                        from_equals_to,
                        white_text)
+
+-        def generate_file_from_dict(self, fname, my_new_dict):
+-                """                 
+-                Inputs: path to dir, file name ('!hamers.txt' for example) and new dictionary
+-                Outputs: none
+-                Effects: Generate new file with dictionary. Check if file exist and then fusion two dictionaries (existing and new).
+-                """
+-                mfile = fname
+-                if os.path.exists(mfile):
+-                        mfile = open(fname,'rb')
+-                        my_existing_dict = pickle.load(mfile)
+-                        my_new_dict = my_new_dict.copy()
+-                        my_new_dict.update(my_existing_dict)                        
+-                        mfile.close()                
+-                mfile = open(fname, 'wb+')
+-                pickle.dump(my_new_dict, mfile)
+-                mfile.close()
+-
+-        def read_dict_from_file(self,fname):
+-                """
+-                Inputs:  name of file with dictionary
+-                Outputs: dictionary from file
+-                Effects: read existing dictionary from file [run test() before train()]
+-                """                
+-                pkl_file = open(fname, 'rb')
+-                my_dict = pickle.load(pkl_file)
+-                pkl_file.close()
+-                return my_dict
+-
++                
+         def check_subject(self, msg, fname):
+                 """
+                 Inputs: path to dir
+@@ -485,13 +161,17 @@ class MyFilter:
+                         self.spam_subject_list[i] = fname
+                 elif (self.truth[fname] == 'OK'):
+                         self.ham_subject_list[i] = fname
++                        
++                
++                
++        
++        
++
++
++        
+                 
+ 
+-         #TO DO Number of words with non-English characters, special characters such as punctuation, or digits at beginning or middle of word         
+-        """def word_with_digits_checker(self, word):
+-                begin_searcher = re.compile(r'[0-9]+[\w\-]')
+-                middle_searcher = re.compile(r'[\w\-]+[0-9]+[\w\-]')
+-                both_checker = re.compile(r'[0-9]+[\w\-]+[0-9]+[\w\-]')"""      
++          
+                 
+                 
+
