@@ -1,6 +1,5 @@
 package cz.cvut.agents.rph.reversi.players;
 
-import cz.cvut.agents.rph.*;
 import cz.cvut.agents.rph.reversi.ReversiMove;
 import cz.cvut.agents.rph.reversi.ReversiPlayer;
 import java.awt.Point;
@@ -9,10 +8,9 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-
 public class PlayerIliusvla extends ReversiPlayer {
 
-     /**
+    /**
      * Dynamic list of possible moves
      */
     public List<Point> listOfPossibleMove = new ArrayList<Point>();
@@ -41,10 +39,12 @@ public class PlayerIliusvla extends ReversiPlayer {
      */
     private int height;
 
- 
+    @Override
+    public String getName() {
+        return "iliusvlaPlayer";
+    }
 
-
-    protected void startGame(int myColor, int opponentColor, int[][] playground) {
+    public void startGame(int myColor, int opponentColor, int[][] playground) {
         // Set dimensions of the playground
         width = playground.length;
         height = playground[0].length;
@@ -58,66 +58,36 @@ public class PlayerIliusvla extends ReversiPlayer {
         opponentPlayer = opponentColor;
     }
 
-    /**Goro Hasegawa table:
-     *D-Type Move ++
-     *A-Type Move +
-     *B-Type Move -
-     *C-Type Move --
-     *X-Type Move ---
+    /**
+     * Goro Hasegawa table: D-Type Move ++ A-Type Move + B-Type Move - C-Type
+     * Move -- X-Type Move ---
      */
- @Override
-    public ReversiMove makeNextMove(int[][] board) {
-         listOfPossibleMove = new ArrayList<Point>();
-        Point p = new Point(goodMove(board));
-        int x = p.x;
-        int y = p.y;
-        ReversiMove r = new ReversiMove(x,y);
-        return r;
-    }
-
-
-    private Point goodMove(int[][] playground) {
-        listOfPossibleMove = checkAllMoves(playground, myPlayer, opponentPlayer);//Find all posible moves          
-        Point possibleMove = findGoodMoves(listOfPossibleMove);
-        if (possibleMove != null) {//If A or D -type move is possible, do good move            
-            return (possibleMove);
-        }
-        listOfPossibleMove = deleteBadMoves(listOfPossibleMove);//If possible del X,C or B-type moves, delete bad moves(if more that 1 move is possible)
-        delNextGoodOpponentMoves(playground, myPlayer, opponentPlayer);
-        if (findBadOpponentMove(playground, myPlayer, opponentPlayer) != null) {
-            return findBadOpponentMove(playground, myPlayer, opponentPlayer);
-        }
-        int RandomIndex = (int) (Math.random() * (listOfPossibleMove.size()));//Do random move from possible moves
-        return (listOfPossibleMove.get(RandomIndex));
-    }
-
-    private List<Point> checkAllMoves(int[][] playground, int myplayer, int opponentplayer) {//Find all possibles moves
-        List<Point> listOfPossibleMoves = new ArrayList<Point>();
+    private void checkAllMoves(int[][] playground) {//Find all possibles moves
         for (int i = 0; i < height; i++) {
             for (int j = 0; j < width; j++) {
-                boolean checkMove = MoveIsLegal(i, j, playground, myplayer, opponentplayer);
+                boolean checkMove = MoveIsLegal(i, j, playground);
                 if (checkMove == true) {
-                    listOfPossibleMoves.add(new Point(i, j));
+                    listOfPossibleMove.add(new Point(i, j));
                 }
             }
         }
-        return listOfPossibleMoves;
+        System.out.println("List Player1: " + listOfPossibleMove);
     }
 
-    private boolean MoveIsLegal(int m, int n, int[][] playground, int myplayer, int opponentplayer) {//Check this move
+    private boolean MoveIsLegal(int m, int n, int[][] playground) {//Check this move
         if (playground[m][n] != -1) {//If it's nofree player can't do this move
             return false;
         }
         for (int dx : dxArr) {//x-Search matrix
-            for (int dy : dyArr) {//y-Search matrix               
+            for (int dy : dyArr) {//y-Search matrix                
                 if (outOfBounds(m + dx, n + dy)) {
                     continue;
                 }
                 int x;
                 int y;
-                for (x = m + dx, y = n + dy; playground[x][y] == opponentplayer && x + dx < width
+                for (x = m + dx, y = n + dy; playground[x][y] == opponentPlayer && x + dx < width
                         && y + dy < height && x + dx >= 0 && y + dy >= 0; x += dx, y += dy);
-                if (playground[x][y] == myplayer && (x - dx != m || y - dy != n)) {
+                if (playground[x][y] == myPlayer && (x - dx != m || y - dy != n)) {
                     return true;
                 }
             }
@@ -130,7 +100,7 @@ public class PlayerIliusvla extends ReversiPlayer {
         for (int i = 0; i < listOfPossibleMove.size(); i++) {//Delete only SSBad moves
             int x = listOfPossibleMove.get(i).x;
             int y = listOfPossibleMove.get(i).y;
-            Point iPoint = new Point(x, y); // noAppleâ„¢
+            Point iPoint = new Point(x, y); // noApple™
             if (checkXTypeMoves(iPoint) && listOfPossibleMove.size() > 1) {
                 listOfPossibleMove.remove(i);
             }
@@ -138,7 +108,7 @@ public class PlayerIliusvla extends ReversiPlayer {
         for (int i = 0; i < listOfPossibleMove.size(); i++) {//Delete only SBad moves
             int x = listOfPossibleMove.get(i).x;
             int y = listOfPossibleMove.get(i).y;
-            Point iPoint = new Point(x, y); // noAppleâ„¢          
+            Point iPoint = new Point(x, y); // noApple™           
             if (checkCTypeMoves(iPoint) && listOfPossibleMove.size() > 1) {
                 listOfPossibleMove.remove(i);
             }
@@ -146,7 +116,7 @@ public class PlayerIliusvla extends ReversiPlayer {
         for (int i = 0; i < listOfPossibleMove.size(); i++) {//Delete only Bad moves
             int x = listOfPossibleMove.get(i).x;
             int y = listOfPossibleMove.get(i).y;
-            Point iPoint = new Point(x, y); // noAppleâ„¢           
+            Point iPoint = new Point(x, y); // noApple™            
             if (checkBTypeMoves(iPoint) && listOfPossibleMove.size() > 1) {
                 listOfPossibleMove.remove(i);
             }
@@ -155,10 +125,10 @@ public class PlayerIliusvla extends ReversiPlayer {
     }
 
     private Point findGoodMoves(List<Point> listOfPossibleMove) {
-        for (int i = 0; i < listOfPossibleMove.size(); i++) {//Check good moves 
+        for (int i = 0; i < listOfPossibleMove.size(); i++) {//Check good moves  
             int x = listOfPossibleMove.get(i).x;
             int y = listOfPossibleMove.get(i).y;
-            Point iPoint = new Point(x, y); // noAppleâ„¢
+            Point iPoint = new Point(x, y); // noApple™
             if (checkDTypeMoves(iPoint)) {//(Priority: A-type, D-type)
                 return iPoint;
             }
@@ -169,36 +139,8 @@ public class PlayerIliusvla extends ReversiPlayer {
         return null;
     }
 
-    private void delNextGoodOpponentMoves(int[][] playground, int myplayer, int opponentplayer) {//If we do it move and opponent can do good move, don't do it move
-        for (int i = 0; i < listOfPossibleMove.size(); i++) {
-            int x = listOfPossibleMove.get(i).x;
-            int y = listOfPossibleMove.get(i).y;
-            playground[x][y] = opponentplayer;
-            List<Point> listOfOpponentMoves = checkAllMoves(playground, myplayer, opponentplayer);
-            if (findGoodMoves(listOfOpponentMoves) != null && listOfPossibleMove.size() > 1) {
-                listOfPossibleMove.remove(i);
-            }
-        }
-    }
-
-    public Point findBadOpponentMove(int[][] playground, int myplayer, int opponentplayer) {//If we do it move and opponent can do only bad move, do it move
-        for (int i = 0; i < listOfPossibleMove.size(); i++) {
-            int x = listOfPossibleMove.get(i).x;
-            int y = listOfPossibleMove.get(i).y;
-            playground[x][y] = opponentplayer;
-            List<Point> listOfOpponentMoves = checkAllMoves(playground, myplayer, opponentplayer);
-            listOfOpponentMoves = deleteBadMoves(listOfOpponentMoves);
-            if (listOfOpponentMoves == null) {
-                Point goodMove = new Point(x, y);
-                return (goodMove);
-            }
-
-        }
-        return null;
-    }
-
     private boolean checkDTypeMoves(Point PossibleMove) {
-        // array[0][0],array[0][7],array[7][0],array[7][7] - SuperGoodMove 
+        // array[0][0],array[0][7],array[7][0],array[7][7] - SuperGoodMove  
         int x = PossibleMove.x;
         int y = PossibleMove.y;
         if ((x == 0 && y == 0) || (x == 0 && y == 7) || (x == 7 && y == 0) || (x == 7 && y == 7)) {
@@ -262,10 +204,23 @@ public class PlayerIliusvla extends ReversiPlayer {
         return x < 0 || y < 0 || x >= width || y >= height;
     }
 
-   
-
     @Override
-    public String getName() {
-        return "PlayerIliusvla";
+    public ReversiMove makeNextMove(int[][] board) {
+        checkAllMoves(board);//Find all posible moves           
+        if (findGoodMoves(listOfPossibleMove) != null) {//If A or D -type move is possible, do good move 
+            return (new ReversiMove(findGoodMoves(listOfPossibleMove).x, findGoodMoves(listOfPossibleMove).y));
+            System.out.println(new ReversiMove(findGoodMoves(listOfPossibleMove).x, findGoodMoves(listOfPossibleMove).y))
+             System.out.println(findGoodMoves(listOfPossibleMove).x + findGoodMoves(listOfPossibleMove).y);
+
+        } else {
+            listOfPossibleMove = deleteBadMoves(listOfPossibleMove);//If possible del X,C or B-type moves, delete bad moves(if more that 1 move is possible)
+            int RandomIndex = (int) (Math.random() * (listOfPossibleMove.size()));//Do random move from possible moves
+            board[findGoodMoves(listOfPossibleMove).x][findGoodMoves(listOfPossibleMove).y] = myPlayer;
+            return new ReversiMove(listOfPossibleMove.get(RandomIndex).x, listOfPossibleMove.get(RandomIndex).y);
+
+        }
+
+
+
     }
 }
