@@ -162,3 +162,4 @@ pip-log.txt
 # Mac crap
 .DS_Store
 /REVERSI/reversi/nbproject/private/
+/REVERSI/JavaLibrary8/nbproject/private/
