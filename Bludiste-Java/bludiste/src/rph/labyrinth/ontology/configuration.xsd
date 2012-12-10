@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" attributeFormDefault="unqualified">
+	<xs:element name="Configuration">
+		<xs:complexType>
+			<xs:sequence minOccurs="1" maxOccurs="unbounded">
+				<xs:element ref="Map"/>
+			</xs:sequence>
+			<xs:attribute name="player" type="xs:string" use="required"/>
+			<xs:attribute name="windowLeft" type="xs:int" default="0"/>
+			<xs:attribute name="windowTop" type="xs:int" default="0"/>
+			<xs:attribute name="windowWidth" type="xs:int" default="600"/>
+			<xs:attribute name="windowHeight" type="xs:int" default="450"/>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="Map">
+		<xs:complexType>
+			<xs:attribute name="name" type="xs:string" use="required"/>
+		</xs:complexType>
+	</xs:element>
+</xs:schema>
