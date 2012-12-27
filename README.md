@@ -4,5 +4,5 @@ I am was student of <a href="http://cw.felk.cvut.cz/doku.php/courses/a4b99rph/st
 <li>Prisoner dilemma player [Python]</li>
 <li>Reversi player [Java]</li>
 <li>Pathfinder [Java]</li>
-<li>Spam filter can be founded in <a href="https://github.com/il-vladislav/SpamFilter">another repo</a>[Python]</li>
+<li>Spam filter can be founded in <a href="https://github.com/il-vladislav/SpamFilter">another repo</a> [Python]</li>
 </ul>
