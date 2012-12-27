@@ -3,12 +3,13 @@ package rph.labyrinth.players;
 import java.awt.Color;
 import java.awt.Point;
 import java.util.ArrayList;
-import java.util.LinkedList;
+import java.util.Comparator;
+import java.util.List;
+
 import rph.labyrinth.Path;
 import rph.labyrinth.Player;
 
 public class iliusvlaPlayer extends Player {
-    
 
     @Override
     protected String getName() {
@@ -16,278 +17,202 @@ public class iliusvlaPlayer extends Player {
     }
     public ArrayList<Point> coordinates;
     public static int pole[][];
-    public static int finishx;
-    public static int finishy;
-    public static int startx;
-    public static int starty;
+     
     static Path smile = new Path(Color.YELLOW);
-    private int[] dxArr = new int[]{-1, 0, 1};
-    private int[] dyArr = new int[]{-1, 0, 1};
     public static int WIDTH;
     public static int HEIGHT;
+    public boolean[][] walls;
+    public Node s = new Node(1, 1);
+    public Node f = new Node(1, 1);
 
     @Override
     protected Path findPath(int[][] map) {
         smile = new Path(Color.YELLOW);
+        WIDTH = map.length;
+        HEIGHT = map[0].length;
+        s = new Node(1, 1);
+        f = new Node(1, 1);
+        walls = new boolean[WIDTH][HEIGHT];
+        smile = new Path(Color.YELLOW);
         pole = map;
         for (int i = 0; i < map.length; i++) {
             for (int j = 0; j < map.length; j++) {
-                if (map[i][j] == 255) {
-                    finishx = i;
-                    finishy = j;
-                    System.err.print(finishx);
+                if (map[i][j] == 255) {         
+                    f.x = i;
+                    f.y = j;           
                 }
-                if (map[i][j] == 16711680) {
-                    startx = i;
-                    starty = j;
-                    smile.addCoordinate(i, j);
+                if (map[i][j] == 16711680) {           
+                    s.x = i;
+                    s.y = j;             
+                }
+                if (map[i][j] == 0) {
+                    walls[i][j] = true;
+                } else {
+                    walls[i][j] = false;
                 }
             }
         }
-        WIDTH = map.length;
-        HEIGHT = WIDTH;
-        fh();
-        smile.addCoordinate(finishx, finishy);
-        if(noroute) return null;
+
+
+        System.out.println();
+
+        Pathfinder p = new Pathfinder();
+        List<Node> pa;
+        pa = p.generate(s, f, walls);
+        for (Node n : pa) {
+            smile.addCoordinate(n.x, n.y);
+        }
+  
+ 
         return smile;
     }
-    
-    
-    
-    //Classic A*-algorithm. I used a http://code.google.com/p/a-star/source/browse/trunk/java/PathFinder.java 
-    //work in Java, and some work in Python  for it
-    boolean noroute = false;
-    public void fh() {
-        // Make all list's
-        Table<Cell> cellList = new Table<Cell>(WIDTH, HEIGHT);
-        Table blockList = new Table(WIDTH, HEIGHT);
-        LinkedList<Cell> openList = new LinkedList<Cell>();
-        LinkedList<Cell> closedList = new LinkedList<Cell>();
-        LinkedList<Cell> tmpList = new LinkedList<Cell>();
-
-        //Set block-cell's
-        for (int i = 0; i < pole.length; i++) {
-            for (int j = 0; j < pole.length; j++) {
-                if (pole[i][j] == 0) {
-                    blockList.add(new Cell(i, j, true));
-                }
-            }
-        }
-
-
-        // Set free cell's
-        for (int i = 0; i < WIDTH; i++) {
-            for (int j = 0; j < HEIGHT; j++) {
-                cellList.add(new Cell(j, i, blockList.get(j, i).blocked));
-            }
-        }
-
-        // Start and finish
-        cellList.get(finishx, finishy).setAsStart();
-        cellList.get(startx, starty).setAsFinish();
-        Cell start = cellList.get(finishx, finishy);
-        Cell finish = cellList.get(startx, starty); 
-        // Let's start
-        boolean found = false;   
-        noroute = false;
-        //1) Add start-cell to open list
-        openList.push(start);
-
-        //2) Repeat next:
-        while (!found && !noroute) {
-            //a) Search in open list cell with lowest price.
-            Cell min = openList.getFirst();
-            for (Cell cell : openList) {                
-                if (cell.F < min.F) {//If you want another way - set it to <=
-                    min = cell;
-                }
-            }
-
-            //b)Set it to closed list and delit from openlist
-            closedList.push(min);
-            openList.remove(min);
-            //System.out.println(openList);
-
-            //c) If your path may pass diagonally - Uncomment this
-            tmpList.clear();
-//            tmpList.add(cellList.get(min.x - 1, min.y - 1));
-            tmpList.add(cellList.get(min.x, min.y - 1));
-//            tmpList.add(cellList.get(min.x + 1, min.y - 1));
-            tmpList.add(cellList.get(min.x + 1, min.y));
-//            tmpList.add(cellList.get(min.x + 1, min.y + 1));
-            tmpList.add(cellList.get(min.x, min.y + 1));
-//            tmpList.add(cellList.get(min.x - 1, min.y + 1));
-            tmpList.add(cellList.get(min.x - 1, min.y));
-
-            for (Cell neightbour : tmpList) {
-                //If cell is blocked or in Block-list - ignore it.
-                if (neightbour.blocked || closedList.contains(neightbour)) {
-                    continue;
-                }
-
-                //Add cell to open-list. Counting H,F,G-cost
-                if (!openList.contains(neightbour)) {
-                    openList.add(neightbour);
-                    neightbour.parent = min;
-                    neightbour.H = neightbour.mandist(finish);
-                    neightbour.G = neightbour.price(min);
-                    neightbour.F = neightbour.H + neightbour.G;
-                    continue;
-                }
-
-                // Check open cell to lower cost
-                if (neightbour.G < min.G + neightbour.price(min)) {                    
-                    neightbour.parent = min.parent;
-                    neightbour.H = neightbour.mandist(finish);
-                    neightbour.G = neightbour.price(min);
-                    neightbour.F = neightbour.H + neightbour.G;
-                }               
-            }
-            //Stop if:
-            //Add finish cell to Open list.
-            //Or Open list is empry. It's problem
-
-            if (openList.contains(finish)) {
-                found = true;
-            }
-            if (openList.isEmpty()) {
-                noroute = true;
-            }
-        }
-
-        //3) Save path. Move from finish to start.
-        if (!noroute) {
-            Cell rd = finish.parent;
-            while (!rd.equals(start)) {
-                rd.road = true;
-                smile.addCoordinate(rd.x, rd.y);
-                System.out.println(rd.x + " " + rd.y);
-                rd = rd.parent;
-
-                if (rd == null) {
-                    break;
-                }
-            }        
-        } else {
-            System.out.println("NO ROUTE");
-        }
-
-    }
-    
-    
-    
-    class Cell {
-
-    /**
-    
-     * Make cell with -x -y coordinates
-    
-     * @param blocked it is blocked(black square)
-    
-     */
-    public Cell(int x, int y, boolean blocked) {
-        this.x = x;
-        this.y = y;
-        this.blocked = blocked;
-    }
-
-    /**
-    
-     * Manhattan algorithm. It's classic!
-    
-     * @param finish finish cell
-    
-     * @return distance
-    
-     */
-    public int mandist(Cell finish) {
-        return 10 * (Math.abs(this.x - finish.x) + Math.abs(this.y - finish.y));
-    }
-
-    /**
-    
-     * Calculating costs of path to near cell
-    
-     * @param finish near cell     
-    
-     */
-    public int price(Cell finish) {
-        if (this.x == finish.x || this.y == finish.y) {
-            return 10;
-        } else {
-            return 14;
-        }
-    }
-
-    /**
-    
-     * Set cell to start-cell
-    
-     */
-    public void setAsStart() {
-        this.start = true;
-    }
-
-    /**
-    
-     * Set cell to finish-cell
-    
-     */
-    public void setAsFinish() {
-        this.finish = true;
-    }
-
-    public boolean equals(Cell second) {
-        return (this.x == second.x) && (this.y == second.y);
-
-    }
-    public int x = -1;
-    public int y = -1;
-    public Cell parent = this;
-    public boolean blocked = false;
-    public boolean start = false;
-    public boolean finish = false;
-    public boolean road = false;
-    public int F = 0;
-    public int G = 0;
-    public int H = 0;
 }
 
-class Table<T extends Cell> {
+class Node {
 
-    public int width;
-    public int height;
-    private Cell[][] table;
+    int x, y;
 
-    public Table(int width, int height) {
-        this.width = width;
-        this.height = height;
-        this.table = new Cell[width][height];
-        for (int i = 0; i < width; i++) {
-            for (int j = 0; j < height; j++) {
-                table[i][j] = new Cell(0, 0, false);
-            }
-        }
+    public Node(int i, int j) {
+        x = i;
+        y = j;
     }
 
-    /**
-    
-     * Add cell to table
-    
-     */
-    public void add(Cell cell) {
-        table[cell.x][cell.y] = cell;
-    }
-
-    @SuppressWarnings("unchecked")
-    public T get(int x, int y) {
-        if (x < width && x >= 0 && y < height && y >= 0) {
-            return (T) table[x][y];
+    public boolean equals(Object obj) {
+        if (obj instanceof Node) {
+            Node n = (Node) obj;
+            return (x == n.x && y == n.y);
+        } else {
+            return false;
         }
-        return (T) (new Cell(0, 0, true)); //It work in JAVA!! Profit.
-
     }
 }
 
+class Pathfinder {
 
+    public static boolean canCutCorners = true;
+    private static Node end;
+    private static int[][] gScore;
+    private static int[][] hScore;
+    private static int[][] fScore;
+    private static Node[][] cameFrom;
+    private static boolean[][] walls;
+
+    public static Node toNode(int i, int j) {
+        return new Node(i, j);
+    }
+
+    public static List<Node> generate(int startX, int startY, int endX, int endY, boolean[][] mapWalls) {
+        return generate(toNode(startX, startY), toNode(endX, endY), mapWalls);
+    }
+
+    public static List<Node> generate(Node start, Node finish, boolean[][] mapWalls) {
+        List<Node> openNodes = new ArrayList<Node>();
+        List<Node> closedNodes = new ArrayList<Node>();
+        walls = mapWalls;
+        end = finish;
+        gScore = new int[walls.length][walls[0].length];
+        fScore = new int[walls.length][walls[0].length];
+        hScore = new int[walls.length][walls[0].length];
+        cameFrom = new Node[walls.length][walls[0].length];
+        openNodes.add(start);
+        gScore[start.x][start.y] = 0;
+        hScore[start.x][start.y] = calculateHeuristic(start);
+        fScore[start.x][start.y] = hScore[start.x][start.y];
+
+        while (openNodes.size() > 0) {
+            Node current = getLowestNodeIn(openNodes);
+            if (current == null) {
+                break;
+            }
+            if (current.equals(end)) {
+                return reconstructPath(current);
+            }
+            System.out.println(current.x + ", " + current.y);
+
+            openNodes.remove(current);
+            closedNodes.add(current);
+
+            List<Node> neighbors = getNeighborNodes(current);
+            for (Node n : neighbors) {
+
+                if (closedNodes.contains(n)) {
+                    continue;
+                }
+
+                int tempGscore = gScore[current.x][current.y] + distanceBetween(n, current);
+
+                boolean proceed = false;
+                if (!openNodes.contains(n)) {
+                    openNodes.add(n);
+                    proceed = true;
+                } else if (tempGscore < gScore[n.x][n.y]) {
+                    proceed = true;
+                }
+
+                if (proceed) {
+                    cameFrom[n.x][n.y] = current;
+                    gScore[n.x][n.y] = tempGscore;
+                    hScore[n.x][n.y] = calculateHeuristic(n);
+                    fScore[n.x][n.y] = gScore[n.x][n.y] + hScore[n.x][n.y];
+                }
+            }
+        }
+        return new ArrayList<Node>();
+    }
+
+    private static List<Node> reconstructPath(Node n) {
+        if (cameFrom[n.x][n.y] != null) {
+            List<Node> path = reconstructPath(cameFrom[n.x][n.y]);
+            path.add(n);
+            return path;
+        } else {
+            List<Node> path = new ArrayList<Node>();
+            path.add(n);
+            return path;
+        }
+    }
+
+    static boolean outOfBounds(int x, int y) {
+
+        return x < 0 || y < 0 || x >= iliusvlaPlayer.WIDTH || y >= iliusvlaPlayer.WIDTH;
+    }
+
+    private static List<Node> getNeighborNodes(Node n) {
+        int[] dxArr = new int[]{-1, 0, 1};
+        int[] dyArr = new int[]{-1, 0, 1};
+        List<Node> found = new ArrayList<Node>();
+        for (int i : dxArr) {
+            for (int j : dyArr) {
+                if (outOfBounds(n.x + i, n.y + j) || i == j || -i == j || i == -j) {
+                    continue;
+                }
+                if (!walls[n.x + i][n.y + j]) {
+                    found.add(toNode(n.x + i, n.y + j));
+                }
+            }
+        }
+
+        return found;
+    }
+
+    private static Node getLowestNodeIn(List<Node> nodes) {
+        int lowest = -1;
+        Node found = null;
+        for (Node n : nodes) {
+            int dist = cameFrom[n.x][n.y] == null ? -1 : gScore[cameFrom[n.x][n.y].x][cameFrom[n.x][n.y].y] + distanceBetween(n, cameFrom[n.x][n.y]) + calculateHeuristic(n);
+            if (dist <= lowest || lowest == -1) {
+                lowest = dist;
+                found = n;
+            }
+        }
+        return found;
+    }
+
+    private static int distanceBetween(Node n1, Node n2) {
+        return (int) Math.round(10 * Math.sqrt(Math.pow(n1.x - n2.x, 2) + Math.pow(n1.y - n2.y, 2)));
+    }
+
+    private static int calculateHeuristic(Node start) {
+        return 10 * (Math.abs(start.x - end.x) + Math.abs(start.y - end.y));
+    }
 }
