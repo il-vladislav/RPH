@@ -5,7 +5,7 @@ class MyVector:
 	def get_vector(self):
 		return(self.vector)		
 	
-#Skalarni soucin	
+        #Dot product	
 	def __mul__(self,other):
 		dot=sum(p*q for p,q in zip(self.vector, other.vector))
 		return(dot)

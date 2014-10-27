@@ -7,21 +7,19 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
+*  I've write this code as a first-semester freshman. 
+*/
+
+/**
  * Standart implementation of MiniMax with Alpha-Beta pruning algorithm.
  *
- * Used 3 classes: PlayerIliusvla, MiniMax and Board
+ * Uses 3 classes: PlayerIliusvla, MiniMax and Board
  *
- * Architecture based on http://goo.gl/XzfEF, http://goo.gl/2qKQA,
- * http://goo.gl/m2cFK, implementation of reversi and on StackOverflow questions
- * As I find, it is very standart Architecture: Class for AIPlayer
- * (PlayerIliusvla) Class for Nodes (Board) with hasChild(checkMove),
- * getChilds(getPossibleMoves), cloneNode(Copy) methods. Class for MiniMax
- * algorithm (MiniMax) with MiniMax and Coast(getCoast) methods
- *
- *I write evaluation function in Board class
- * 
- * Methods setBoard, checkMove were found in Internet and adopted
- *
+ * Architecture based on http://goo.gl/XzfEF, http://goo.gl/2qKQA, http://goo.gl/m2cFK
+ * Architecture is pretty simple: Class for AIPlayer(PlayerIliusvla)
+ * Class for Nodes (Board) with methods hasChild(checkMove), getChilds(getPossibleMoves), cloneNode(Copy) methods.
+ * Class for MiniMax algorithm (MiniMax) with MiniMax and Coast(getCoast) methods
+ * Evaluation function is in Board class
  * @author Iliushin Vladislav
  */
 public class PlayerIliusvla extends ReversiPlayer {
@@ -54,11 +52,11 @@ public class PlayerIliusvla extends ReversiPlayer {
             return result;
         }
 
-        // give-away in the early game
+        // Give-away in the early game
         if (br.totalDisks() < 40) {
             AlphaBeta = new MiniMax(br, myColor, 4);
 
-        } // take-back later in the game
+        } // Take-back later in the game
         else {
             AlphaBeta = new MiniMax(br, myColor, 15);
         }
@@ -158,8 +156,8 @@ class Board {
     }
 
     /**
-     * Method evaluate board using stability, stones counter and position
-     * evaluation In early game method use stability and stones superiority with
+     * Method evaluates board using stability metric, stones counter and position
+     * evaluation. In early game method use stability and stones superiority with
      * position evaluation In middle and end game method use stones superiority
      * with position evaluation TODO: find best coefficients
      *
@@ -342,7 +340,7 @@ class Board {
     }
 
     /**
-     * Why I love Python
+     * TODO: Use better implementation.
      *
      * @param board
      * @return new board
@@ -508,7 +506,7 @@ class Board {
  *
  * Architecture based on Wikipedia pseudo-code implementation
  *
- * @author iliusvla
+ * @author Iliushin Vladislav
  */
 class MiniMax {
 
